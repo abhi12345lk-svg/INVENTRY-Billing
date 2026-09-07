@@ -325,10 +325,35 @@ export default function ProductList({
 
         {/* Empty State */}
         {!loading && !error && products.length === 0 && (
-          <div style={{ padding: "60px", textAlign: "center", color: "var(--text-muted)" }}>
-            <Package size={40} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
-            <h4 style={{ color: "var(--text-main)", marginBottom: "4px" }}>No Products Found</h4>
-            <p style={{ fontSize: "0.85rem" }}>Try adjusting your search terms or filters.</p>
+          <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+            <Package size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+            <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Products In Catalog</h4>
+            <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+              {search || companyFilter !== "ALL" || categoryFilter !== "ALL" || statusFilter !== "ALL"
+                ? "No products match your filter criteria. Try clearing search filters."
+                : "Your product master catalog is empty. Add your first FMCG item to begin inventory and billing."}
+            </p>
+            {onOpenAddModal && (
+              <button
+                onClick={onOpenAddModal}
+                style={{
+                  background: "var(--primary-600)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 18px",
+                  fontSize: "0.88rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+              >
+                <Plus size={16} />
+                <span>Add Product</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -360,13 +385,13 @@ export default function ProductList({
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => {
+                {products.map((p, idx) => {
                   const companyStyle = getCompanyBadge(p.companyId, p.companyName);
                   const isActive = p.status === "ACTIVE";
 
                   return (
                     <tr 
-                      key={p.id}
+                      key={p.id ? `${p.id}-${p.productCode || idx}` : idx}
                       style={{
                         borderBottom: "1px solid var(--border-card)",
                         transition: "background 0.2s ease"

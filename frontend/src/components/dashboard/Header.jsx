@@ -1,15 +1,13 @@
 import React from "react";
 import { 
   Search, 
-  Sun, 
-  Moon, 
   LogOut, 
   ShieldCheck, 
   Building2, 
   Bell
 } from "lucide-react";
 
-export default function Header({ user, onLogout, theme, onToggleTheme, searchQuery, setSearchQuery }) {
+export default function Header({ user, onLogout, searchQuery, setSearchQuery }) {
   return (
     <header style={{
       background: "var(--header-bg)",
@@ -29,12 +27,16 @@ export default function Header({ user, onLogout, theme, onToggleTheme, searchQue
           <input
             type="text"
             className="input-control"
-            placeholder="Search bills, outlets, salesmen, UTR, or cheques..."
+            placeholder="Universal Search (Ctrl + K) - Outlets, Bills, Products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: "42px", height: "42px", fontSize: "0.88rem" }}
+            style={{ paddingLeft: "44px", height: "44px" }}
           />
-          <Search className="input-icon" size={18} style={{ left: "14px" }} />
+          <Search 
+            className="input-icon" 
+            size={18} 
+            style={{ left: "16px", top: "50%", transform: "translateY(-50%)" }} 
+          />
         </div>
       </div>
 
@@ -57,23 +59,33 @@ export default function Header({ user, onLogout, theme, onToggleTheme, searchQue
           <span>Company: <strong style={{ color: "var(--text-main)" }}>Chirag Combines FMCG</strong></span>
         </div>
 
-        {/* Theme Switcher Button */}
-        <button 
-          className="theme-toggle-btn"
-          onClick={onToggleTheme}
-          title="Switch Light/Dark Theme"
+        {/* Notifications Icon */}
+        <button
+          style={{
+            background: "var(--bg-input)",
+            border: "1px solid var(--border-card)",
+            color: "var(--text-muted)",
+            width: "40px",
+            height: "40px",
+            borderRadius: "10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            position: "relative"
+          }}
+          title="Notifications"
         >
-          {theme === "dark" ? (
-            <>
-              <Sun size={16} color="#f59e0b" />
-              <span>Light</span>
-            </>
-          ) : (
-            <>
-              <Moon size={16} color="#6366f1" />
-              <span>Dark</span>
-            </>
-          )}
+          <Bell size={18} />
+          <span style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            width: "8px",
+            height: "8px",
+            background: "#ef4444",
+            borderRadius: "50%"
+          }}></span>
         </button>
 
         {/* Owner User Profile */}
@@ -102,23 +114,11 @@ export default function Header({ user, onLogout, theme, onToggleTheme, searchQue
         {/* Switch Role / Logout Button */}
         <button
           onClick={onLogout}
-          style={{
-            background: "rgba(239, 68, 68, 0.12)",
-            color: "#fca5a5",
-            border: "1px solid rgba(239, 68, 68, 0.25)",
-            padding: "10px 16px",
-            borderRadius: "12px",
-            fontSize: "0.85rem",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "all 0.2s ease"
-          }}
+          className="btn-logout"
+          title="Logout and switch account"
         >
           <LogOut size={16} />
-          <span>Switch Role / Logout</span>
+          <span>Logout</span>
         </button>
       </div>
     </header>

@@ -9,7 +9,8 @@ import {
   TrendingUp,
   Store,
   ShieldCheck,
-  ShoppingCart
+  ShoppingCart,
+  LogOut
 } from "lucide-react";
 
 import AreaList from "../areas/AreaList";
@@ -26,7 +27,7 @@ import OrderList from "../orders/OrderList";
 import OrderDetails from "../orders/OrderDetails";
 import CreateOrder from "../orders/CreateOrder";
 
-export default function SalesManagerPanel({ user, token }) {
+export default function SalesManagerPanel({ user, token, onLogout }) {
   const [activeTab, setActiveTab] = useState("assignments"); // 'assignments' | 'salesmen' | 'routes' | 'areas'
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
@@ -224,6 +225,17 @@ export default function SalesManagerPanel({ user, token }) {
             <span>Sales Orders</span>
           </button>
         </div>
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="btn-logout"
+            title="Logout from sales manager session"
+          >
+            <LogOut size={15} />
+            <span>Logout</span>
+          </button>
+        )}
       </div>
 
       {/* Success Notification */}

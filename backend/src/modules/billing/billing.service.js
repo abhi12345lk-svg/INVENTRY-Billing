@@ -13,6 +13,10 @@ import {
   validateBillCancellation,
   validateBillMutation
 } from "./billing.validator.js";
+import {
+  checkStockAvailability,
+  deductStockForBillItems
+} from "../inventory/inventory.repository.js";
 
 const round2 = (num) => Math.round((Number(num || 0) + Number.EPSILON) * 100) / 100;
 
@@ -30,6 +34,13 @@ export const generateBillFromOrderService = async (orderId, user) => {
   }
 
   const { order } = validation;
+
+  // Step 9: Verify inventory stock availability before billing
+  const stockCheck = await checkStockAvailability(order.items || []);
+  if (!stockCheck.available) {
+    throw { status: 400, message: stockCheck.message };
+  }
+
   const nextBillNumber = await getNextBillNumber();
 
   // Convert order line items into billing line items with verified financial snapshots
@@ -101,8 +112,11 @@ export const generateBillFromOrderService = async (orderId, user) => {
     taxableAmount,
     taxAmount,
     totalAmount,
+    netAmount: totalAmount,
     paidAmount: 0,
     outstandingAmount: totalAmount,
+    balanceAmount: totalAmount,
+    isLocked: false,
     billStatus: "GENERATED",
     paymentStatus: "UNPAID",
     totalItems: billItems.length,
@@ -115,6 +129,14 @@ export const generateBillFromOrderService = async (orderId, user) => {
   };
 
   const createdBill = await createBillRecord(newBillData);
+
+  // Step 9: Automatically deduct stock and create BILL_SALE movements
+  try {
+    await deductStockForBillItems(createdBill.items, createdBill, user);
+  } catch (invErr) {
+    console.error("Inventory deduction error after billing:", invErr);
+  }
+
   console.log(`[AUDIT] Bill Generated: ${createdBill.billNumber} from Order #${order.orderNumber} by ${user.name} [${user.role}]`);
 
   return createdBill;

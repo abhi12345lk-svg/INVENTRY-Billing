@@ -115,3 +115,22 @@ export const cancelBill = async (req, res) => {
     });
   }
 };
+
+export const getOpenBillsForCustomer = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+    const { findOpenBillsByCustomer } = await import("./billing.repository.js");
+    const bills = await findOpenBillsByCustomer(customerId);
+    return res.status(200).json({
+      success: true,
+      data: bills
+    });
+  } catch (err) {
+    console.error("getOpenBillsForCustomer Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch open bills for customer."
+    });
+  }
+};
+

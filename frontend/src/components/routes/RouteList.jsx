@@ -328,8 +328,35 @@ export default function RouteList({
                 </tr>
               ) : routes.length === 0 ? (
                 <tr>
-                  <td colSpan={canModify ? 7 : 6} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    No routes found matching filter criteria.
+                  <td colSpan={canModify ? 7 : 6} style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                    <RouteIcon size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+                    <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Beat Routes Configured</h4>
+                    <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+                      {search || areaFilter !== "ALL" || statusFilter !== "ALL"
+                        ? "No beat routes match your filter criteria. Try resetting search filters."
+                        : "No beat routes found. Create a route to start scheduling salesman visits and customer deliveries."}
+                    </p>
+                    {onOpenAddModal && canModify && (
+                      <button
+                        onClick={onOpenAddModal}
+                        style={{
+                          background: "var(--primary-600)",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 18px",
+                          fontSize: "0.88rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        <Plus size={16} />
+                        <span>Create Route</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

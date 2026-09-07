@@ -343,8 +343,35 @@ export default function OrderList({
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    No orders found matching the filter criteria.
+                  <td colSpan={10} style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                    <ShoppingBag size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+                    <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Orders Booked Yet</h4>
+                    <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+                      {search || statusFilter !== "ALL"
+                        ? "No booked orders match your filter criteria. Try clearing search filters."
+                        : "No orders found in order booking queue. Book your first retailer order to generate bills."}
+                    </p>
+                    {(onOpenCreate || onOpenCreateModal) && (
+                      <button
+                        onClick={onOpenCreate || onOpenCreateModal}
+                        style={{
+                          background: "var(--primary-600)",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 18px",
+                          fontSize: "0.88rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        <Plus size={16} />
+                        <span>Book New Order</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

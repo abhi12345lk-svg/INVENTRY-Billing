@@ -21,13 +21,15 @@ import {
   Settings, 
   ChevronDown, 
   ChevronRight,
-  Sparkles
+  Sparkles,
+  LogOut
 } from "lucide-react";
 
-export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) {
+export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 10, approvalCount = 4, onLogout }) {
   const [salesExpanded, setSalesExpanded] = useState(true);
   const [collectionsExpanded, setCollectionsExpanded] = useState(true);
   const [inventoryExpanded, setInventoryExpanded] = useState(false);
+  const [deliveryExpanded, setDeliveryExpanded] = useState(false);
   const [receivablesExpanded, setReceivablesExpanded] = useState(false);
 
   const isTabActive = (tabId) => activeTab === tabId;
@@ -201,8 +203,10 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
           {collectionsExpanded && (
             <div style={{ paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
               {[
+                { id: "col-payments", label: "Payment Collections" },
+                { id: "col-unmatched", label: "UPI Suspense Queue" },
                 { id: "col-cash", label: "Cash Tally" },
-                { id: "col-upi", label: "UPI & Suspense" },
+                { id: "col-upi", label: "UPI & Direct" },
                 { id: "col-cheques", label: "Cheques Vault" },
                 { id: "col-recon", label: "Reconciliation" }
               ].map((item) => (
@@ -257,9 +261,10 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
           {inventoryExpanded && (
             <div style={{ paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
               {[
-                { id: "inv-stock", label: "Current Stock" },
-                { id: "inv-dispatch", label: "Dispatch Sheets" },
-                { id: "inv-returns", label: "Returns & Damage" }
+                { id: "inventory-overview", label: "Inventory Overview" },
+                { id: "inventory-stock", label: "Stock List" },
+                { id: "inventory-alerts", label: "Low Stock Alerts" },
+                { id: "inventory-movements", label: "Stock Movements" }
               ].map((item) => (
                 <button
                   key={item.id}
@@ -283,28 +288,61 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
           )}
         </div>
 
-        {/* Delivery */}
-        <button
-          onClick={() => onTabSelect("delivery")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: "12px",
-            border: "none",
-            background: isTabActive("delivery") ? "var(--badge-brand-bg)" : "transparent",
-            color: isTabActive("delivery") ? "var(--primary-400)" : "var(--text-muted)",
-            fontWeight: isTabActive("delivery") ? "700" : "500",
-            fontSize: "0.88rem",
-            cursor: "pointer",
-            textAlign: "left"
-          }}
-        >
-          <Truck size={18} />
-          <span>Delivery & Trips</span>
-        </button>
+        {/* Delivery & Dispatch Group */}
+        <div>
+          <button
+            onClick={() => setDeliveryExpanded(!deliveryExpanded)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: "12px",
+              border: "none",
+              background: "transparent",
+              color: "var(--text-muted)",
+              fontWeight: "600",
+              fontSize: "0.88rem",
+              cursor: "pointer"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Truck size={18} />
+              <span>Delivery & Trips</span>
+            </div>
+            {deliveryExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+
+          {deliveryExpanded && (
+            <div style={{ paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
+              {[
+                { id: "delivery-dashboard", label: "Delivery Dashboard" },
+                { id: "delivery-ready", label: "Ready for Dispatch" },
+                { id: "delivery-trips", label: "Trips & Dispatch" },
+                { id: "delivery-vehicles", label: "Vehicle Fleet" }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onTabSelect(item.id)}
+                  style={{
+                    padding: "7px 12px",
+                    borderRadius: "8px",
+                    border: "none",
+                    background: isTabActive(item.id) ? "var(--badge-brand-bg)" : "transparent",
+                    color: isTabActive(item.id) ? "var(--primary-400)" : "var(--text-dim)",
+                    fontWeight: isTabActive(item.id) ? "600" : "400",
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                    textAlign: "left"
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Receivables Group */}
         <div>
@@ -404,7 +442,7 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            justifyContent: "space-between",
             width: "100%",
             padding: "10px 14px",
             borderRadius: "12px",
@@ -417,8 +455,22 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
             textAlign: "left"
           }}
         >
-          <ShieldCheck size={18} />
-          <span>Approvals & Overrides</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <ShieldCheck size={18} />
+            <span>Approvals Queue</span>
+          </div>
+          {approvalCount > 0 && (
+            <span style={{
+              background: "var(--primary-400)",
+              color: "#ffffff",
+              fontSize: "0.72rem",
+              fontWeight: "800",
+              padding: "2px 7px",
+              borderRadius: "10px"
+            }}>
+              {approvalCount}
+            </span>
+          )}
         </button>
 
         {/* Reports */}
@@ -494,16 +546,33 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
 
       {/* Sidebar Footer */}
       <div style={{
-        padding: "16px 20px",
+        padding: "14px 16px",
         borderTop: "1px solid var(--border-card)",
-        fontSize: "0.75rem",
-        color: "var(--text-dim)",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between"
+        flexDirection: "column",
+        gap: "10px"
       }}>
-        <span>Network Status</span>
-        <span style={{ color: "#10b981", fontWeight: "700" }}>● 100% Online</span>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="btn-logout"
+            style={{ width: "100%", justifyContent: "center", padding: "9px 14px" }}
+            title="Logout from system"
+          >
+            <LogOut size={16} />
+            <span>Logout System</span>
+          </button>
+        )}
+        <div style={{
+          fontSize: "0.75rem",
+          color: "var(--text-dim)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between"
+        }}>
+          <span>Network Status</span>
+          <span style={{ color: "#10b981", fontWeight: "700" }}>● 100% Online</span>
+        </div>
       </div>
     </aside>
   );

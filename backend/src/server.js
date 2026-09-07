@@ -11,7 +11,13 @@ import salesmanRoutes from "./modules/salesmen/salesman.routes.js";
 import assignmentRoutes from "./modules/assignments/assignment.routes.js";
 import orderRoutes from "./modules/orders/order.routes.js";
 import billingRoutes from "./modules/billing/billing.routes.js";
+import paymentRoutes from "./modules/payments/payment.routes.js";
+import inventoryRoutes from "./modules/inventory/inventory.routes.js";
+import { deliveryRouter, vehicleRouter } from "./modules/delivery/delivery.routes.js";
+import { exceptionRouter, approvalRouter } from "./modules/exceptions/exception.routes.js";
+import reportRoutes from "./modules/reports/report.routes.js";
 import { connectDB } from "./config/database.js";
+import { seedDemoData } from "./config/demo.seed.js";
 
 dotenv.config();
 
@@ -35,6 +41,13 @@ app.use("/api/salesmen", salesmanRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/bills", billingRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/delivery", deliveryRouter);
+app.use("/api/vehicles", vehicleRouter);
+app.use("/api/exceptions", exceptionRouter);
+app.use("/api/approvals", approvalRouter);
+app.use("/api/reports", reportRoutes);
 
 // Health Check Endpoint
 app.get("/api/health", (req, res) => {
@@ -52,4 +65,6 @@ app.listen(PORT, () => {
   console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
   console.log(`🔗 Customers API: http://localhost:${PORT}/api/customers`);
   console.log(`=================================================`);
+  // Auto-seed demo data (skips if data already exists)
+  seedDemoData();
 });

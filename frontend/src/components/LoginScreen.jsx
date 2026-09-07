@@ -5,35 +5,86 @@ import {
   Mail, 
   ArrowRight, 
   ShieldCheck, 
-  Sparkles, 
-  UserCheck, 
-  TrendingUp, 
-  Coins, 
-  Users, 
-  ShoppingBag,
-  CheckCircle2,
-  Sun,
-  Moon
+  Sparkles,
+  AlertCircle,
+  Crown,
+  Coins,
+  TrendingUp,
+  Bike,
+  CheckCircle2
 } from "lucide-react";
 
-export default function LoginScreen({ demoUsers, onLogin, isLoading, errorMessage, theme, onToggleTheme }) {
-  const [emailOrMobile, setEmailOrMobile] = useState("");
-  const [password, setPassword] = useState("");
-  const [selectedRoleUser, setSelectedRoleUser] = useState(null);
+export const DEMO_ROLES = [
+  {
+    role: "SUPER_ADMIN",
+    title: "Owner",
+    name: "Rajesh Sharma",
+    email: "owner@distributorerp.com",
+    password: "password123",
+    icon: Crown,
+    badgeText: "SUPER_ADMIN",
+    themeColor: "#6366f1",
+    themeBg: "rgba(99, 102, 241, 0.1)",
+    themeBorder: "rgba(99, 102, 241, 0.3)",
+    desc: "Command Center, Margins & Master Approvals"
+  },
+  {
+    role: "FINANCE",
+    title: "Finance",
+    name: "Amit Verma",
+    email: "finance@distributorerp.com",
+    password: "password123",
+    icon: Coins,
+    badgeText: "FINANCE",
+    themeColor: "#059669",
+    themeBg: "rgba(16, 185, 129, 0.1)",
+    themeBorder: "rgba(16, 185, 129, 0.3)",
+    desc: "GST Invoicing, Cash Tally & UPI Bank Recon"
+  },
+  {
+    role: "SALES_MANAGER",
+    title: "Sales Manager",
+    name: "Vikas Malhotra",
+    email: "salesmgr@distributorerp.com",
+    password: "password123",
+    icon: TrendingUp,
+    badgeText: "SALES_MANAGER",
+    themeColor: "#0284c7",
+    themeBg: "rgba(14, 165, 233, 0.1)",
+    themeBorder: "rgba(14, 165, 233, 0.3)",
+    desc: "Beat Planning, Salesmen Targets & Quota"
+  },
+  {
+    role: "SALESMAN",
+    title: "Salesman",
+    name: "Rahul Kumar",
+    email: "salesman@distributorerp.com",
+    password: "password123",
+    icon: Bike,
+    badgeText: "SALESMAN",
+    themeColor: "#d97706",
+    themeBg: "rgba(245, 158, 11, 0.12)",
+    themeBorder: "rgba(245, 158, 11, 0.3)",
+    desc: "Field Beat Orders & Market Collections"
+  }
+];
+
+export default function LoginScreen({ onLogin, isLoading, errorMessage }) {
+  const [emailOrMobile, setEmailOrMobile] = useState("owner@distributorerp.com");
+  const [password, setPassword] = useState("password123");
+  const [selectedRole, setSelectedRole] = useState("SUPER_ADMIN");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (selectedRoleUser) {
-      onLogin({ role: selectedRoleUser.role });
-    } else {
-      onLogin({ emailOrMobile, password });
-    }
+    onLogin({ emailOrMobile, password });
   };
 
-  const handleSelectRole = (user) => {
-    setSelectedRoleUser(user);
-    setEmailOrMobile(user.email);
-    setPassword("••••••••");
+  const handleSelectDemoRole = (demoRole) => {
+    setEmailOrMobile(demoRole.email);
+    setPassword(demoRole.password);
+    setSelectedRole(demoRole.role);
+    // Instant 1-click login for smooth demo presentation
+    onLogin({ emailOrMobile: demoRole.email, password: demoRole.password });
   };
 
   return (
@@ -45,324 +96,281 @@ export default function LoginScreen({ demoUsers, onLogin, isLoading, errorMessag
       padding: "40px 20px",
       minHeight: "100vh",
       width: "100%",
-      position: "relative"
+      position: "relative",
+      background: "var(--bg-dark)"
     }}>
-      {/* Top Header Controls (Theme Switcher) */}
-      <div style={{
-        position: "absolute",
-        top: "24px",
-        right: "32px",
-        zIndex: 10
-      }}>
-        <button 
-          className="theme-toggle-btn"
-          onClick={onToggleTheme}
-          title="Switch Theme"
-        >
-          {theme === "dark" ? (
-            <>
-              <Sun size={16} color="#f59e0b" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon size={16} color="#6366f1" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </button>
-      </div>
-
       {/* Brand Header */}
-      <div style={{ textAlign: "center", marginBottom: "32px", maxWidth: "600px" }}>
+      <div style={{ textAlign: "center", marginBottom: "24px", maxWidth: "560px" }}>
         <div style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: "10px",
-          background: "var(--badge-brand-bg)",
-          border: "1px solid var(--badge-brand-border)",
+          gap: "8px",
+          background: "rgba(79, 70, 229, 0.08)",
+          border: "1px solid rgba(79, 70, 229, 0.2)",
           borderRadius: "30px",
-          padding: "6px 18px",
-          marginBottom: "16px",
-          color: "var(--primary-400)",
-          fontSize: "0.85rem",
-          fontWeight: "600",
-          letterSpacing: "0.05em"
+          padding: "6px 16px",
+          marginBottom: "12px",
+          color: "var(--primary-600)",
+          fontSize: "0.82rem",
+          fontWeight: "700",
+          letterSpacing: "0.04em"
         }}>
-          <Sparkles size={16} />
-          FMCG DISTRIBUTION NETWORK
+          <Sparkles size={15} />
+          CHIRAG COMBINES FMCG
         </div>
 
         <h1 style={{
-          fontSize: "2.75rem",
+          fontSize: "2.2rem",
           fontWeight: "900",
           letterSpacing: "-0.03em",
           color: "var(--text-main)",
-          marginBottom: "10px"
+          marginBottom: "6px"
         }}>
           DISTRIBUTOR ERP
         </h1>
 
-        <p style={{ color: "var(--text-muted)", fontSize: "0.98rem", lineHeight: "1.6" }}>
-          Authorized Distribution System for <strong style={{ color: "var(--text-main)" }}>Nestlé</strong>, <strong style={{ color: "var(--text-main)" }}>Patanjali</strong> & <strong style={{ color: "var(--text-main)" }}>GSK</strong>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: "1.5", margin: 0 }}>
+          Authorized Distribution Management & Multi-Role Operations System
         </p>
       </div>
 
-      {/* Main Glass Card */}
+      {/* Main Login Card */}
       <div className="glass-card" style={{
         width: "100%",
-        maxWidth: "960px",
-        padding: "36px",
-        display: "grid",
-        gridTemplateColumns: "1fr 1.1fr",
-        gap: "40px"
+        maxWidth: "540px",
+        padding: "32px",
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+        borderRadius: "20px",
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03)"
       }}>
-
-        {/* Left Side: Standard Login Form */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ marginBottom: "24px" }}>
-            <h2 style={{ fontSize: "1.4rem", fontWeight: "700", color: "var(--text-main)", marginBottom: "6px" }}>
-              System Sign In
-            </h2>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-dim)" }}>
-              Enter credentials or select a demo role profile on the right.
-            </p>
+        {/* Quick 1-Click Demo Login Bar */}
+        <div style={{ marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+            <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "var(--primary-600)", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "6px" }}>
+              <Sparkles size={14} />
+              1-Click Demo Logins (Instant Switch)
+            </span>
+            <span style={{ fontSize: "0.72rem", color: "var(--text-dim)", fontFamily: "monospace" }}>
+              Pass: password123
+            </span>
           </div>
 
-          {errorMessage && (
-            <div style={{
-              background: "rgba(239, 68, 68, 0.12)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              color: "#fca5a5",
-              padding: "12px 16px",
-              borderRadius: "12px",
-              fontSize: "0.875rem",
-              marginBottom: "20px"
-            }}>
-              {errorMessage}
-            </div>
-          )}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "10px"
+          }}>
+            {DEMO_ROLES.map((d) => {
+              const IconComponent = d.icon;
+              const isSelected = selectedRole === d.role;
 
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label className="input-label">Email or Mobile Number</label>
-              <div className="input-field-wrapper">
-                <input
-                  type="text"
-                  className="input-control"
-                  placeholder="e.g. owner@distributorerp.com or 9876543210"
-                  value={emailOrMobile}
-                  onChange={(e) => {
-                    setEmailOrMobile(e.target.value);
-                    setSelectedRoleUser(null);
+              return (
+                <button
+                  key={d.role}
+                  type="button"
+                  onClick={() => handleSelectDemoRole(d)}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    textAlign: "left",
+                    padding: "12px 14px",
+                    borderRadius: "12px",
+                    background: isSelected ? d.themeBg : "var(--bg-surface-2)",
+                    border: isSelected ? `2px solid ${d.themeColor}` : "1px solid var(--border-card)",
+                    cursor: "pointer",
+                    transition: "all 0.18s ease",
+                    position: "relative"
                   }}
-                  required
-                />
-                <Mail className="input-icon" size={18} />
-              </div>
-            </div>
-
-            <div className="input-group">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <label className="input-label" style={{ marginBottom: 0 }}>Password</label>
-                <a href="#forgot" onClick={(e) => e.preventDefault()} style={{ color: "var(--primary-400)", fontSize: "0.8rem", textDecoration: "none" }}>
-                  Forgot Password?
-                </a>
-              </div>
-              <div className="input-field-wrapper">
-                <input
-                  type="password"
-                  className="input-control"
-                  placeholder="Enter secure password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Lock className="input-icon" size={18} />
-              </div>
-            </div>
-
-            {selectedRoleUser && (
-              <div style={{
-                background: "var(--badge-brand-bg)",
-                border: "1px solid var(--border-active)",
-                borderRadius: "12px",
-                padding: "10px 14px",
-                marginBottom: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px"
-              }}>
-                <CheckCircle2 size={18} color={selectedRoleUser.badgeColor} />
-                <span style={{ fontSize: "0.85rem", color: "var(--text-sub)" }}>
-                  Selected Demo Role: <strong style={{ color: selectedRoleUser.badgeColor }}>{selectedRoleUser.roleLabel}</strong>
-                </span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{ width: "100%", padding: "14px", marginTop: "8px" }}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span>Authenticating Session...</span>
-              ) : (
-                <>
-                  <span>Login to ERP Portal</span>
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Infrastructure Security Badge */}
-          <div style={{
-            marginTop: "32px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "0.78rem",
-            color: "var(--text-dim)",
-            borderTop: "1px solid var(--border-card)",
-            paddingTop: "16px"
-          }}>
-            <ShieldCheck size={16} color="#10b981" />
-            <span>256-bit Encrypted Session • MongoDB Atlas Transaction Engine</span>
-          </div>
-        </div>
-
-        {/* Right Side: Interactive Quick Demo Users Selection */}
-        <div style={{
-          borderLeft: "1px solid var(--border-card)",
-          paddingLeft: "32px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between"
-        }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--text-main)" }}>
-                Select Demo Role Profile
-              </h3>
-              <span style={{
-                background: "var(--badge-brand-bg)",
-                color: "var(--text-muted)",
-                padding: "2px 10px",
-                borderRadius: "12px",
-                fontSize: "0.75rem"
-              }}>
-                1-Click Testing
-              </span>
-            </div>
-
-            <p style={{ fontSize: "0.82rem", color: "var(--text-dim)", marginBottom: "20px" }}>
-              Test different panels (Owner, Finance, Sales Manager, Salesman) to experience role-based controls:
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {demoUsers && demoUsers.map((user) => {
-                const isSelected = selectedRoleUser?.id === user.id;
-                return (
-                  <div
-                    key={user.id}
-                    onClick={() => handleSelectRole(user)}
-                    style={{
-                      background: isSelected ? "var(--badge-brand-bg)" : "var(--bg-input)",
-                      border: isSelected ? `1.5px solid ${user.badgeColor}` : "1px solid var(--border-card)",
-                      borderRadius: "16px",
-                      padding: "12px 16px",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "14px"
-                    }}
-                  >
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      style={{
-                        width: "44px",
-                        height: "44px",
-                        borderRadius: "12px",
-                        objectFit: "cover",
-                        border: `2px solid ${user.badgeColor}`
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
-                        <span style={{ fontSize: "0.92rem", fontWeight: "700", color: "var(--text-main)" }}>
-                          {user.name}
-                        </span>
-                        <span style={{
-                          background: user.badgeBg,
-                          color: user.badgeColor,
-                          padding: "2px 8px",
-                          borderRadius: "8px",
-                          fontSize: "0.7rem",
-                          fontWeight: "700"
-                        }}>
-                          {user.role}
-                        </span>
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.borderColor = d.themeColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.borderColor = "var(--border-card)";
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", marginBottom: "4px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div style={{
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "6px",
+                        background: d.themeBg,
+                        color: d.themeColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}>
+                        <IconComponent size={14} />
                       </div>
-                      <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: "500" }}>
-                        {user.roleLabel}
-                      </div>
+                      <span style={{ fontWeight: "800", fontSize: "0.85rem", color: "var(--text-main)" }}>
+                        {d.title}
+                      </span>
                     </div>
-
-                    <button
-                      type="button"
-                      style={{
-                        background: isSelected ? user.badgeColor : "var(--border-card)",
-                        color: isSelected ? "#ffffff" : "var(--text-muted)",
-                        border: "none",
-                        padding: "6px 12px",
-                        borderRadius: "10px",
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                        cursor: "pointer"
-                      }}
-                    >
-                      {isSelected ? "Active" : "Select"}
-                    </button>
+                    <span style={{
+                      fontSize: "0.62rem",
+                      fontWeight: "800",
+                      padding: "2px 6px",
+                      borderRadius: "6px",
+                      background: d.themeBg,
+                      color: d.themeColor,
+                      border: `1px solid ${d.themeBorder}`
+                    }}>
+                      {d.badgeText}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          <div style={{
-            background: "var(--bg-input)",
-            borderRadius: "14px",
-            padding: "12px 16px",
-            marginTop: "20px",
-            fontSize: "0.78rem",
-            color: "var(--text-dim)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}>
-            <span>Connected Brands:</span>
-            <span style={{ color: "var(--text-main)", fontWeight: "600" }}>Nestlé • Patanjali • GSK</span>
+                  <div style={{ fontSize: "0.74rem", color: "var(--text-muted)", fontFamily: "monospace", marginTop: "2px" }}>
+                    {d.email}
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-dim)", marginTop: "2px", lineHeight: 1.3 }}>
+                    {d.desc}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-      </div>
+        <div style={{
+          position: "relative",
+          textAlign: "center",
+          margin: "18px 0",
+          borderTop: "1px solid var(--border-card)"
+        }}>
+          <span style={{
+            position: "relative",
+            top: "-10px",
+            background: "#ffffff",
+            padding: "0 12px",
+            fontSize: "0.72rem",
+            color: "var(--text-dim)",
+            fontWeight: "700",
+            textTransform: "uppercase"
+          }}>
+            Or Enter Credentials Manually
+          </span>
+        </div>
 
-      {/* Professional Footer */}
-      <div style={{
-        marginTop: "36px",
-        textAlign: "center",
-        color: "var(--text-dim)",
-        fontSize: "0.85rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "6px"
-      }}>
-        <p style={{ fontWeight: "500" }}>© Distributor Management System</p>
-        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Chirag Combines FMCG ERP • Modular Architecture v1.0 Demo</p>
+        {errorMessage && (
+          <div style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#b91c1c",
+            padding: "12px 14px",
+            borderRadius: "12px",
+            fontSize: "0.85rem",
+            marginBottom: "18px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px"
+          }}>
+            <AlertCircle size={18} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="input-group" style={{ marginBottom: "16px" }}>
+            <label className="input-label" style={{ color: "var(--text-sub)", fontWeight: "600", fontSize: "0.82rem", marginBottom: "6px" }}>
+              Email or Mobile Number
+            </label>
+            <div className="input-field-wrapper">
+              <input
+                type="text"
+                className="input-control"
+                placeholder="e.g. owner@distributorerp.com"
+                value={emailOrMobile}
+                onChange={(e) => setEmailOrMobile(e.target.value)}
+                autoComplete="username"
+                required
+                style={{
+                  background: "#f8fafc",
+                  borderColor: "#e2e8f0",
+                  color: "#0f172a",
+                  height: "44px"
+                }}
+              />
+              <Mail className="input-icon" size={18} color="#64748b" />
+            </div>
+          </div>
+
+          <div className="input-group" style={{ marginBottom: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label className="input-label" style={{ marginBottom: 0, color: "var(--text-sub)", fontWeight: "600", fontSize: "0.82rem" }}>
+                Password
+              </label>
+              <a 
+                href="#forgot" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert("Demo password for all 4 accounts is: password123");
+                }} 
+                style={{ color: "var(--primary-600)", fontSize: "0.78rem", textDecoration: "none", fontWeight: "700" }}
+              >
+                Show Default Password
+              </a>
+            </div>
+            <div className="input-field-wrapper">
+              <input
+                type="password"
+                className="input-control"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                style={{
+                  background: "#f8fafc",
+                  borderColor: "#e2e8f0",
+                  color: "#0f172a",
+                  height: "44px"
+                }}
+              />
+              <Lock className="input-icon" size={18} color="#64748b" />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{ 
+              width: "100%", 
+              padding: "13px", 
+              background: "linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)",
+              boxShadow: "0 4px 14px rgba(79, 70, 229, 0.3)",
+              fontSize: "0.92rem",
+              borderRadius: "12px"
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span>Authenticating Session...</span>
+            ) : (
+              <>
+                <span>Sign In to Portal</span>
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Security Footer */}
+        <div style={{
+          marginTop: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          fontSize: "0.75rem",
+          color: "var(--text-dim)",
+          borderTop: "1px solid #f1f5f9",
+          paddingTop: "14px"
+        }}>
+          <ShieldCheck size={16} color="#10b981" />
+          <span>FMCG Distribution ERP • 4 Demo Roles Configured</span>
+        </div>
       </div>
     </div>
   );

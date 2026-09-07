@@ -408,8 +408,35 @@ export default function BillList({
                 </tr>
               ) : bills.length === 0 ? (
                 <tr>
-                  <td colSpan={11} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    No invoices found matching criteria.
+                  <td colSpan={11} style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                    <Receipt size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+                    <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Invoices Generated Yet</h4>
+                    <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+                      {search || billStatus !== "ALL" || paymentStatus !== "ALL"
+                        ? "No invoices match the selected filter criteria. Try resetting search filters."
+                        : "No tax invoices generated yet. Convert approved customer orders into tax invoices."}
+                    </p>
+                    {onOpenGenerate && (
+                      <button
+                        onClick={onOpenGenerate}
+                        style={{
+                          background: "var(--primary-600)",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 18px",
+                          fontSize: "0.88rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        <Plus size={16} />
+                        <span>Generate Invoice</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (

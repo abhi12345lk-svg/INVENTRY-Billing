@@ -236,10 +236,35 @@ export default function CustomerList({ token, onSelectCustomer, onOpenAddModal, 
 
         {/* Empty State */}
         {!loading && !error && customers.length === 0 && (
-          <div style={{ padding: "60px", textAlign: "center", color: "var(--text-muted)" }}>
-            <Store size={40} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
-            <h4 style={{ color: "var(--text-main)", marginBottom: "4px" }}>No Outlets Found</h4>
-            <p style={{ fontSize: "0.85rem" }}>Try adjusting your search terms or filters.</p>
+          <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+            <Store size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+            <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Outlets Registered Yet</h4>
+            <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+              {search || statusFilter !== "ALL" || routeFilter !== "ALL"
+                ? "No customer outlets match your search and filter criteria. Try resetting filters."
+                : "No customer outlets found in database. Register your first retail shop to begin."}
+            </p>
+            {onOpenAddModal && (
+              <button
+                onClick={onOpenAddModal}
+                style={{
+                  background: "var(--primary-600)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 18px",
+                  fontSize: "0.88rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+              >
+                <Plus size={16} />
+                <span>Add Customer</span>
+              </button>
+            )}
           </div>
         )}
 

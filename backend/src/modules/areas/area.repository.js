@@ -1,63 +1,6 @@
-// Initial Seed Data for Area Master (5 Primary Territories in Raipur)
-let initialAreas = [
-  {
-    id: "area-001",
-    areaCode: "AREA-000001",
-    areaName: "Raipur Central",
-    description: "Main commercial market, Sadar Bazaar & wholesale FMCG trading hub.",
-    status: "ACTIVE",
-    createdBy: "system",
-    updatedBy: "system",
-    createdAt: new Date("2026-07-01T08:00:00Z").toISOString(),
-    updatedAt: new Date("2026-07-01T08:00:00Z").toISOString()
-  },
-  {
-    id: "area-002",
-    areaCode: "AREA-000002",
-    areaName: "Raipur West",
-    description: "G.T. Road, Model Town & residential grocery outlet clusters.",
-    status: "ACTIVE",
-    createdBy: "system",
-    updatedBy: "system",
-    createdAt: new Date("2026-07-01T08:30:00Z").toISOString(),
-    updatedAt: new Date("2026-07-01T08:30:00Z").toISOString()
-  },
-  {
-    id: "area-003",
-    areaCode: "AREA-000003",
-    areaName: "Raipur East",
-    description: "Railway Station Road, Telibandha & outer township corridors.",
-    status: "ACTIVE",
-    createdBy: "system",
-    updatedBy: "system",
-    createdAt: new Date("2026-07-01T09:00:00Z").toISOString(),
-    updatedAt: new Date("2026-07-01T09:00:00Z").toISOString()
-  },
-  {
-    id: "area-004",
-    areaCode: "AREA-000004",
-    areaName: "Tatibandh",
-    description: "Industrial warehouse logistics zone & national highway junction.",
-    status: "ACTIVE",
-    createdBy: "system",
-    updatedBy: "system",
-    createdAt: new Date("2026-07-01T09:30:00Z").toISOString(),
-    updatedAt: new Date("2026-07-01T09:30:00Z").toISOString()
-  },
-  {
-    id: "area-005",
-    areaCode: "AREA-000005",
-    areaName: "Devendra Nagar",
-    description: "High-density retail avenues, modern supermarkets & convenience stores.",
-    status: "ACTIVE",
-    createdBy: "system",
-    updatedBy: "system",
-    createdAt: new Date("2026-07-01T10:00:00Z").toISOString(),
-    updatedAt: new Date("2026-07-01T10:00:00Z").toISOString()
-  }
-];
-
-let areaCounter = 6;
+// Operational Area Master Repository (Clean Production Foundation)
+let initialAreas = [];
+let areaCounter = 1;
 
 export const generateAreaCode = () => {
   const code = `AREA-${String(areaCounter).padStart(6, "0")}`;

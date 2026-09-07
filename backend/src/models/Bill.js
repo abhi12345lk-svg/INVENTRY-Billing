@@ -261,6 +261,37 @@ const billSchema = new mongoose.Schema(
       default: "UNPAID",
       index: true
     },
+    deliveryStatus: {
+      type: String,
+      enum: [
+        "PENDING_DISPATCH",
+        "READY_FOR_DISPATCH",
+        "DISPATCHED",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+        "FAILED",
+        "RETURN_PENDING"
+      ],
+      default: "READY_FOR_DISPATCH",
+      index: true
+    },
+    tripId: {
+      type: String,
+      default: null,
+      index: true
+    },
+    tripNumber: {
+      type: String,
+      default: null
+    },
+    deliveredAt: {
+      type: String,
+      default: null
+    },
+    deliveryRemarks: {
+      type: String,
+      default: ""
+    },
     totalItems: {
       type: Number,
       default: 0

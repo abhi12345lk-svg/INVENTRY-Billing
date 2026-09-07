@@ -1,8 +1,8 @@
 import { getOwnerDashboardData } from "../services/dashboardService.js";
 
-export const getOwnerDashboard = (req, res) => {
+export const getOwnerDashboard = async (req, res) => {
   try {
-    const data = getOwnerDashboardData();
+    const data = await getOwnerDashboardData();
     return res.status(200).json({
       success: true,
       message: "Owner Command Center data retrieved successfully.",

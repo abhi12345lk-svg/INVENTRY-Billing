@@ -13,7 +13,12 @@ import {
   ShoppingBag,
   Clock,
   ArrowRight,
-  FileText
+  FileText,
+  Coins,
+  Receipt,
+  AlertTriangle,
+  Plus,
+  LogOut
 } from "lucide-react";
 
 import CreateOrder from "../orders/CreateOrder";
@@ -21,18 +26,23 @@ import OrderList from "../orders/OrderList";
 import OrderDetails from "../orders/OrderDetails";
 import BillList from "../billing/BillList";
 import BillDetails from "../billing/BillDetails";
+import PaymentList from "../payments/PaymentList";
+import PaymentDetails from "../payments/PaymentDetails";
+import AddPaymentModal from "../payments/AddPaymentModal";
 
-export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
+export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogout }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [selectedRoute, setSelectedRoute] = useState("ALL");
   const [assignedRoutes, setAssignedRoutes] = useState([]);
-  const [activeView, setActiveView] = useState("outlets"); // "outlets" | "orders" | "bills"
+  const [activeView, setActiveView] = useState("outlets"); // "outlets" | "orders" | "bills" | "collections"
   const [bookingCustomer, setBookingCustomer] = useState(null);
+  const [collectingCustomer, setCollectingCustomer] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedBill, setSelectedBill] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // Fetch salesman's assigned routes and customers
@@ -207,6 +217,7 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
                 setActiveView("bills");
                 setSelectedOrder(null);
                 setSelectedBill(null);
+                setSelectedPayment(null);
               }}
               style={{
                 padding: "8px 14px",
@@ -226,6 +237,31 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
               <FileText size={14} />
               <span>My Invoices</span>
             </button>
+            <button
+              onClick={() => {
+                setActiveView("collections");
+                setSelectedOrder(null);
+                setSelectedBill(null);
+                setSelectedPayment(null);
+              }}
+              style={{
+                padding: "8px 14px",
+                borderRadius: "8px",
+                border: "none",
+                fontSize: "0.82rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: activeView === "collections" ? "var(--primary-600)" : "transparent",
+                color: activeView === "collections" ? "#ffffff" : "var(--text-muted)",
+                transition: "all 0.15s ease"
+              }}
+            >
+              <Coins size={14} />
+              <span>Collections</span>
+            </button>
           </div>
 
           <div style={{
@@ -238,6 +274,17 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
             <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "block" }}>Beat Cycle</span>
             <strong style={{ fontSize: "0.85rem", color: "var(--text-main)" }}>Mon / Wed / Fri</strong>
           </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="btn-logout"
+              title="Logout from salesman session"
+            >
+              <LogOut size={15} />
+              <span>Logout</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -526,25 +573,46 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
                       </strong>
                     </div>
 
-                    <button
-                      onClick={() => setBookingCustomer(cus)}
-                      style={{
-                        padding: "7px 14px",
-                        borderRadius: "8px",
-                        border: "none",
-                        background: "var(--primary-600)",
-                        color: "#ffffff",
-                        fontSize: "0.8rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px"
-                      }}
-                    >
-                      <ShoppingBag size={14} />
-                      <span>Book Order</span>
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <button
+                        onClick={() => setCollectingCustomer(cus)}
+                        style={{
+                          padding: "7px 12px",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(16, 185, 129, 0.3)",
+                          background: "rgba(16, 185, 129, 0.15)",
+                          color: "#34d399",
+                          fontSize: "0.8rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px"
+                        }}
+                      >
+                        <Receipt size={13} />
+                        <span>Collect</span>
+                      </button>
+                      <button
+                        onClick={() => setBookingCustomer(cus)}
+                        style={{
+                          padding: "7px 14px",
+                          borderRadius: "8px",
+                          border: "none",
+                          background: "var(--primary-600)",
+                          color: "#ffffff",
+                          fontSize: "0.8rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <ShoppingBag size={14} />
+                        <span>Book Order</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -599,6 +667,93 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
         )
       )}
 
+      {/* Step 8: Salesman Collections View */}
+      {activeView === "collections" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Cash Difference Audit Alert Banner */}
+          <div style={{
+            padding: "16px 20px",
+            borderRadius: "14px",
+            background: "rgba(239, 68, 68, 0.08)",
+            border: "1px solid rgba(239, 68, 68, 0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "14px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "12px",
+                background: "rgba(239, 68, 68, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#dc2626",
+                flexShrink: 0
+              }}>
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <div style={{ fontWeight: "800", color: "#dc2626", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>🔴 CASH DIFFERENCE: ₹100 SHORT</span>
+                  <span style={{ fontSize: "0.72rem", background: "rgba(239, 68, 68, 0.15)", padding: "2px 8px", borderRadius: "10px", color: "#b91c1c", fontWeight: "700" }}>
+                    Demo Reconciliation Alert
+                  </span>
+                </div>
+                <div style={{ fontSize: "0.82rem", color: "#7f1d1d", marginTop: "3px" }}>
+                  System Expected Cash from Invoices: <strong style={{ color: "var(--text-main)" }}>₹28,500</strong> • Salesman Recorded Cash Handover: <strong style={{ color: "var(--text-main)" }}>₹28,400</strong>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setCollectingCustomer(customers[0] || null)}
+              style={{
+                padding: "8px 18px",
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#ffffff",
+                fontSize: "0.85rem",
+                fontWeight: "700",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
+              }}
+            >
+              <Plus size={16} />
+              <span>+ Record Collection</span>
+            </button>
+          </div>
+
+          {/* Payment List or Details */}
+          {selectedPayment ? (
+            <PaymentDetails
+              payment={selectedPayment}
+              token={token}
+              user={user}
+              onBack={() => setSelectedPayment(null)}
+              onPaymentUpdated={(updated) => {
+                setSelectedPayment(updated);
+                setFeedbackMessage("Payment voucher updated");
+              }}
+            />
+          ) : (
+            <PaymentList
+              token={token}
+              user={user}
+              onSelectPayment={(p) => setSelectedPayment(p)}
+              onOpenAddPayment={() => setCollectingCustomer(customers[0] || null)}
+            />
+          )}
+        </div>
+      )}
+
       {/* Booking Order Modal */}
       {bookingCustomer && (
         <CreateOrder
@@ -610,6 +765,22 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
             setFeedbackMessage(msg);
             setBookingCustomer(null);
             setActiveView("orders");
+          }}
+        />
+      )}
+
+      {/* Record Collection Modal */}
+      {collectingCustomer && (
+        <AddPaymentModal
+          isOpen={!!collectingCustomer}
+          token={token}
+          user={user}
+          preselectedCustomer={collectingCustomer}
+          onClose={() => setCollectingCustomer(null)}
+          onSuccess={(msg, newP) => {
+            setFeedbackMessage(msg || `Collection recorded successfully!`);
+            setCollectingCustomer(null);
+            setActiveView("collections");
           }}
         />
       )}

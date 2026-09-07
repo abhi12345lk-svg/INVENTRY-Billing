@@ -32,9 +32,26 @@ import OrderDetails from "../orders/OrderDetails";
 import CreateOrder from "../orders/CreateOrder";
 import BillList from "../billing/BillList";
 import BillDetails from "../billing/BillDetails";
-import { AlertCircle, RefreshCw, Sparkles, Layers } from "lucide-react";
+import PaymentList from "../payments/PaymentList";
+import PaymentDetails from "../payments/PaymentDetails";
+import UnmatchedQueue from "../payments/UnmatchedQueue";
+import InventoryDashboard from "../inventory/InventoryDashboard";
+import InventoryList from "../inventory/InventoryList";
+import InventoryDetails from "../inventory/InventoryDetails";
+import StockMovementHistory from "../inventory/StockMovementHistory";
+import DeliveryDashboard from "../delivery/DeliveryDashboard";
+import ReadyForDispatch from "../delivery/ReadyForDispatch";
+import DeliveryTripList from "../delivery/DeliveryTripList";
+import DeliveryTripDetails from "../delivery/DeliveryTripDetails";
+import VehicleList from "../delivery/VehicleList";
+import ExceptionDashboard from "../exceptions/ExceptionDashboard";
+import ExceptionDetails from "../exceptions/ExceptionDetails";
+import ApprovalDashboard from "../approvals/ApprovalDashboard";
+import ApprovalDetails from "../approvals/ApprovalDetails";
+import ExecutiveReports from "../reports/ExecutiveReports";
+import { AlertCircle, RefreshCw, Layers, Sparkles } from "lucide-react";
 
-export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, token }) {
+export default function OwnerDashboard({ user, onLogout, token }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [dashboardData, setDashboardData] = useState(null);
@@ -76,6 +93,19 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
 
   // Step 7: Billing & Invoices state
   const [selectedBill, setSelectedBill] = useState(null);
+
+  // Step 8: Payments & Reconciliation state
+  const [selectedPayment, setSelectedPayment] = useState(null);
+
+  // Step 9: Inventory & Stock state
+  const [selectedInventory, setSelectedInventory] = useState(null);
+
+  // Step 10: Delivery & Dispatch state
+  const [selectedTrip, setSelectedTrip] = useState(null);
+
+  // Step 11: Exception & Approval state
+  const [selectedException, setSelectedException] = useState(null);
+  const [selectedApproval, setSelectedApproval] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
 
@@ -126,8 +156,15 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
           setSelectedCustomer(null);
           setSelectedOrder(null);
           setSelectedBill(null);
+          setSelectedPayment(null);
+          setSelectedInventory(null);
+          setSelectedTrip(null);
+          setSelectedException(null);
+          setSelectedApproval(null);
         }} 
-        exceptionCount={dashboardData?.exceptions?.length || 6}
+        exceptionCount={dashboardData?.exceptions?.length || 10}
+        approvalCount={4}
+        onLogout={onLogout}
       />
 
       {/* Main Content Area */}
@@ -137,8 +174,6 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
         <Header 
           user={user} 
           onLogout={onLogout} 
-          theme={theme} 
-          onToggleTheme={onToggleTheme}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
@@ -350,6 +385,240 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
                 }}
               />
             )
+          ) : activeTab === "col-payments" ? (
+            /* STEP 8: PAYMENT COLLECTIONS REGISTER */
+            selectedPayment ? (
+              <PaymentDetails
+                payment={selectedPayment}
+                token={token}
+                user={user}
+                onBack={() => setSelectedPayment(null)}
+                onPaymentUpdated={(updated) => {
+                  setSelectedPayment(updated);
+                  showToast("Payment voucher updated");
+                }}
+                onNavigateToBills={() => {
+                  setActiveTab("sales-bills");
+                  showToast("Opening Invoices Master");
+                }}
+              />
+            ) : (
+              <PaymentList
+                token={token}
+                user={user}
+                onSelectPayment={(p) => setSelectedPayment(p)}
+              />
+            )
+          ) : activeTab === "col-unmatched" || activeTab === "col-upi" ? (
+            /* STEP 8: UPI SUSPENSE QUEUE */
+            selectedPayment ? (
+              <PaymentDetails
+                payment={selectedPayment}
+                token={token}
+                user={user}
+                onBack={() => setSelectedPayment(null)}
+                onPaymentUpdated={(updated) => {
+                  setSelectedPayment(updated);
+                  showToast("Payment voucher updated");
+                }}
+                onNavigateToBills={() => {
+                  setActiveTab("sales-bills");
+                  showToast("Opening Invoices Master");
+                }}
+              />
+            ) : (
+              <UnmatchedQueue
+                token={token}
+                user={user}
+                onSelectPayment={(p) => setSelectedPayment(p)}
+                onOpenAllPayments={() => setActiveTab("col-payments")}
+              />
+            )
+          ) : activeTab === "col-cash" ? (
+            /* CASH TALLY VIEW */
+            <PaymentList
+              token={token}
+              user={user}
+              initialModeFilter="CASH"
+              onSelectPayment={(p) => setSelectedPayment(p)}
+            />
+          ) : activeTab === "col-cheques" ? (
+            /* CHEQUES VAULT VIEW */
+            <PaymentList
+              token={token}
+              user={user}
+              initialModeFilter="CHEQUE"
+              onSelectPayment={(p) => setSelectedPayment(p)}
+            />
+          ) : activeTab === "col-recon" ? (
+            /* RECONCILIATION SUMMARY VIEW */
+            <PaymentList
+              token={token}
+              user={user}
+              onSelectPayment={(p) => setSelectedPayment(p)}
+            />
+          ) : activeTab === "inventory-overview" ? (
+            /* STEP 9: INVENTORY DASHBOARD */
+            selectedInventory ? (
+              <InventoryDetails
+                inventoryId={selectedInventory.id || selectedInventory._id}
+                initialInventory={selectedInventory}
+                token={token}
+                user={user}
+                onBack={() => setSelectedInventory(null)}
+                onInventoryUpdated={(up) => setSelectedInventory(up)}
+              />
+            ) : (
+              <InventoryDashboard
+                token={token}
+                user={user}
+                onSelectProduct={(p) => setSelectedInventory(p)}
+                onViewAllStock={() => setActiveTab("inventory-stock")}
+                onViewMovements={() => setActiveTab("inventory-movements")}
+              />
+            )
+          ) : activeTab === "inventory-stock" || activeTab === "inv-stock" ? (
+            /* STEP 9: INVENTORY STOCK MASTER */
+            selectedInventory ? (
+              <InventoryDetails
+                inventoryId={selectedInventory.id || selectedInventory._id}
+                initialInventory={selectedInventory}
+                token={token}
+                user={user}
+                onBack={() => setSelectedInventory(null)}
+                onInventoryUpdated={(up) => setSelectedInventory(up)}
+              />
+            ) : (
+              <InventoryList
+                token={token}
+                user={user}
+                onSelectInventory={(p) => setSelectedInventory(p)}
+              />
+            )
+          ) : activeTab === "inventory-alerts" ? (
+            /* STEP 9: LOW STOCK ALERTS */
+            selectedInventory ? (
+              <InventoryDetails
+                inventoryId={selectedInventory.id || selectedInventory._id}
+                initialInventory={selectedInventory}
+                token={token}
+                user={user}
+                onBack={() => setSelectedInventory(null)}
+                onInventoryUpdated={(up) => setSelectedInventory(up)}
+              />
+            ) : (
+              <InventoryList
+                token={token}
+                user={user}
+                initialStatusFilter="LOW_STOCK"
+                onSelectInventory={(p) => setSelectedInventory(p)}
+              />
+            )
+          ) : activeTab === "inventory-movements" ? (
+            /* STEP 9: STOCK MOVEMENTS LEDGER */
+            <StockMovementHistory
+              token={token}
+              user={user}
+              title="Distributor Stock Movement Audit Ledger"
+            />
+          ) : activeTab === "delivery-dashboard" || activeTab === "delivery" ? (
+            /* STEP 10: DELIVERY DASHBOARD */
+            selectedTrip ? (
+              <DeliveryTripDetails
+                tripId={selectedTrip.id || selectedTrip._id}
+                initialTrip={selectedTrip}
+                token={token}
+                user={user}
+                onBack={() => setSelectedTrip(null)}
+                onTripUpdated={(updated) => setSelectedTrip(updated)}
+              />
+            ) : (
+              <DeliveryDashboard
+                token={token}
+                user={user}
+                onSelectTrip={(t) => setSelectedTrip(t)}
+                onViewReadyDispatch={() => setActiveTab("delivery-ready")}
+                onViewAllTrips={() => setActiveTab("delivery-trips")}
+                onViewFleet={() => setActiveTab("delivery-vehicles")}
+              />
+            )
+          ) : activeTab === "delivery-ready" ? (
+            /* STEP 10: READY FOR DISPATCH INVOICE STAGING */
+            <ReadyForDispatch
+              token={token}
+              user={user}
+              onCreateTripSuccess={() => {
+                setActiveTab("delivery-trips");
+                showToast("Delivery trip dispatched successfully");
+              }}
+            />
+          ) : activeTab === "delivery-trips" ? (
+            /* STEP 10: DELIVERY TRIPS MASTER */
+            selectedTrip ? (
+              <DeliveryTripDetails
+                tripId={selectedTrip.id || selectedTrip._id}
+                initialTrip={selectedTrip}
+                token={token}
+                user={user}
+                onBack={() => setSelectedTrip(null)}
+                onTripUpdated={(updated) => setSelectedTrip(updated)}
+              />
+            ) : (
+              <DeliveryTripList
+                token={token}
+                user={user}
+                onSelectTrip={(t) => setSelectedTrip(t)}
+                onCreateTripClick={() => setActiveTab("delivery-ready")}
+              />
+            )
+          ) : activeTab === "delivery-vehicles" ? (
+            /* STEP 10: VEHICLE FLEET MASTER */
+            <VehicleList
+              token={token}
+              user={user}
+            />
+          ) : activeTab === "exceptions" ? (
+            /* STEP 11: OWNER EXCEPTION CONTROL CENTER */
+            selectedException ? (
+              <ExceptionDetails
+                exception={selectedException}
+                token={token}
+                user={user}
+                onBack={() => setSelectedException(null)}
+                onExceptionUpdated={(updated) => setSelectedException(updated)}
+              />
+            ) : (
+              <ExceptionDashboard
+                token={token}
+                user={user}
+                onSelectException={(exc) => setSelectedException(exc)}
+                onNavigateToApprovals={() => setActiveTab("approvals")}
+              />
+            )
+          ) : activeTab === "approvals" ? (
+            /* STEP 11: OWNER APPROVAL QUEUE */
+            selectedApproval ? (
+              <ApprovalDetails
+                approval={selectedApproval}
+                token={token}
+                user={user}
+                onBack={() => setSelectedApproval(null)}
+                onApprovalUpdated={(updated) => setSelectedApproval(updated)}
+              />
+            ) : (
+              <ApprovalDashboard
+                token={token}
+                user={user}
+                onSelectApproval={(apr) => setSelectedApproval(apr)}
+              />
+            )
+          ) : activeTab === "reports" ? (
+            /* STEP 12: EXECUTIVE REPORTS & BUSINESS ANALYTICS */
+            <ExecutiveReports
+              token={token}
+              user={user}
+              onNavigateTab={(tab) => setActiveTab(tab)}
+            />
           ) : (
             /* OVERVIEW / DASHBOARD VIEW */
             <>
@@ -432,7 +701,28 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
                       </p>
                     </div>
 
-                    <div style={{ display: "flex", gap: "16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => setActiveTab("demo-guide")}
+                        style={{
+                          background: "linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%)",
+                          border: "1px solid rgba(99, 102, 241, 0.4)",
+                          color: "#818cf8",
+                          borderRadius: "14px",
+                          padding: "12px 18px",
+                          fontWeight: "800",
+                          fontSize: "0.85rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          cursor: "pointer",
+                          boxShadow: "0 4px 14px rgba(99, 102, 241, 0.25)"
+                        }}
+                      >
+                        <Sparkles size={16} />
+                        <span>Interactive Demo Guide</span>
+                      </button>
+
                       <div style={{
                         background: "var(--bg-input)",
                         border: "1px solid var(--border-card)",
@@ -476,6 +766,9 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
                     exceptions={dashboardData.exceptions} 
                     onSelectException={(exc) => {
                       console.log("Selected exception:", exc);
+                      setActiveTab("exceptions");
+                      setSelectedException(exc);
+                      showToast(`Navigated to Exception: ${exc.title}`);
                     }}
                   />
 

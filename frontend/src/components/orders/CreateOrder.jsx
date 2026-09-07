@@ -28,6 +28,7 @@ export default function CreateOrder({
   const [selectedCustomer, setSelectedCustomer] = useState(preselectedCustomer || customer);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [inventoryMap, setInventoryMap] = useState({});
   const [loadingLookups, setLoadingLookups] = useState(true);
 
   // Cart / Items state
@@ -47,18 +48,21 @@ export default function CreateOrder({
     }
   }, [preselectedCustomer, customer]);
 
-  // Load customer choices (if not passed as prop) & active products
+  // Load customer choices, active products & real-time inventory stock levels
   useEffect(() => {
     const fetchLookups = async () => {
       setLoadingLookups(true);
       try {
-        const [prodRes, custRes] = await Promise.all([
+        const [prodRes, custRes, invRes] = await Promise.all([
           fetch("http://localhost:5005/api/products?status=ACTIVE&limit=100", {
             headers: { "Authorization": `Bearer ${token}` }
           }),
           !customer ? fetch("http://localhost:5005/api/customers?limit=100", {
             headers: { "Authorization": `Bearer ${token}` }
-          }) : Promise.resolve(null)
+          }) : Promise.resolve(null),
+          fetch("http://localhost:5005/api/inventory?limit=100", {
+            headers: { "Authorization": `Bearer ${token}` }
+          })
         ]);
 
         const prodJson = await prodRes.json();
@@ -75,6 +79,18 @@ export default function CreateOrder({
             }
           }
         }
+
+        if (invRes) {
+          const invJson = await invRes.json();
+          if (invJson.success && invJson.data) {
+            const map = {};
+            invJson.data.forEach((inv) => {
+              map[inv.productId] = inv;
+              if (inv.productCode) map[inv.productCode] = inv;
+            });
+            setInventoryMap(map);
+          }
+        }
       } catch (err) {
         console.error("Lookups load error:", err);
       } finally {
@@ -87,11 +103,22 @@ export default function CreateOrder({
 
   // Add product to cart
   const handleAddProduct = (prod, quantity = 1) => {
+    const inv = inventoryMap[prod.id] || inventoryMap[prod.productCode];
+    if (inv && (inv.status === "OUT_OF_STOCK" || inv.availableStock <= 0)) {
+      setError(`Cannot add "${prod.productName}": Product is OUT OF STOCK in warehouse.`);
+      setTimeout(() => setError(""), 4000);
+      return;
+    }
+
     setOrderItems((prev) => {
       const existingIdx = prev.findIndex((item) => item.productId === prod.id);
       if (existingIdx !== -1) {
         const updated = [...prev];
         const newQty = updated[existingIdx].quantity + quantity;
+        if (inv && newQty > inv.availableStock) {
+          setError(`Notice: Selected quantity (${newQty}) exceeds currently available stock (${inv.availableStock} ${prod.unit || 'pcs'}).`);
+          setTimeout(() => setError(""), 4000);
+        }
         const lineSubtotal = newQty * prod.saleRate;
         const lineDiscount = lineSubtotal * ((prod.discount || 0) / 100);
         const taxableValue = lineSubtotal - lineDiscount;
@@ -109,6 +136,10 @@ export default function CreateOrder({
         };
         return updated;
       } else {
+        if (inv && quantity > inv.availableStock) {
+          setError(`Notice: Order quantity (${quantity}) exceeds currently available stock (${inv.availableStock} ${prod.unit || 'pcs'}).`);
+          setTimeout(() => setError(""), 4000);
+        }
         const lineSubtotal = quantity * prod.saleRate;
         const lineDiscount = lineSubtotal * ((prod.discount || 0) / 100);
         const taxableValue = lineSubtotal - lineDiscount;
@@ -501,7 +532,7 @@ export default function CreateOrder({
                         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "2px" }}>
                           <span style={{ fontFamily: "monospace" }}>{p.sku}</span> • {p.companyName} ({p.packSize || p.unit})
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px", fontSize: "0.8rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px", fontSize: "0.8rem", flexWrap: "wrap" }}>
                           <span style={{ color: "var(--primary-400)", fontWeight: "700" }}>₹{p.saleRate}</span>
                           <span style={{ color: "var(--text-muted)", textDecoration: "line-through", fontSize: "0.75rem" }}>MRP ₹{p.mrp}</span>
                           {p.discount > 0 && (
@@ -509,6 +540,67 @@ export default function CreateOrder({
                               {p.discount}% Disc
                             </span>
                           )}
+
+                          {/* Real-time Inventory Stock Badge */}
+                          {(() => {
+                            const inv = inventoryMap[p.id] || inventoryMap[p.productCode];
+                            if (!inv) return null;
+                            if (inv.status === "OUT_OF_STOCK" || inv.availableStock <= 0) {
+                              return (
+                                <span style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "0.68rem",
+                                  color: "#f87171",
+                                  background: "rgba(239, 68, 68, 0.12)",
+                                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                                  padding: "1px 6px",
+                                  borderRadius: "4px",
+                                  fontWeight: "700"
+                                }}>
+                                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ef4444" }}></span>
+                                  Out of Stock (0)
+                                </span>
+                              );
+                            }
+                            if (inv.status === "LOW_STOCK") {
+                              return (
+                                <span style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "0.68rem",
+                                  color: "#fbbf24",
+                                  background: "rgba(245, 158, 11, 0.12)",
+                                  border: "1px solid rgba(245, 158, 11, 0.3)",
+                                  padding: "1px 6px",
+                                  borderRadius: "4px",
+                                  fontWeight: "700"
+                                }}>
+                                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#f59e0b" }}></span>
+                                  Low Stock ({inv.availableStock} {p.unit || 'pcs'} left)
+                                </span>
+                              );
+                            }
+                            return (
+                              <span style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "0.68rem",
+                                color: "#34d399",
+                                background: "rgba(16, 185, 129, 0.12)",
+                                border: "1px solid rgba(16, 185, 129, 0.3)",
+                                padding: "1px 6px",
+                                borderRadius: "4px",
+                                fontWeight: "700"
+                              }}>
+                                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#10b981" }}></span>
+                                Stock: {inv.availableStock} {p.unit || 'pcs'}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
 
@@ -525,26 +617,35 @@ export default function CreateOrder({
                             {inCart.quantity} in order
                           </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleAddProduct(p, 1)}
-                          style={{
-                            padding: "7px 12px",
-                            borderRadius: "8px",
-                            border: "none",
-                            background: "var(--primary-600)",
-                            color: "#ffffff",
-                            fontSize: "0.8rem",
-                            fontWeight: "600",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px"
-                          }}
-                        >
-                          <Plus size={14} />
-                          <span>Add</span>
-                        </button>
+                        {(() => {
+                          const inv = inventoryMap[p.id] || inventoryMap[p.productCode];
+                          const isOos = inv && (inv.status === "OUT_OF_STOCK" || inv.availableStock <= 0);
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleAddProduct(p, 1)}
+                              disabled={isOos}
+                              title={isOos ? "Item is out of stock in warehouse" : "Add item to order"}
+                              style={{
+                                padding: "7px 12px",
+                                borderRadius: "8px",
+                                border: "none",
+                                background: isOos ? "rgba(255, 255, 255, 0.08)" : "var(--primary-600)",
+                                color: isOos ? "var(--text-muted)" : "#ffffff",
+                                fontSize: "0.8rem",
+                                fontWeight: "600",
+                                cursor: isOos ? "not-allowed" : "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                opacity: isOos ? 0.6 : 1
+                              }}
+                            >
+                              <Plus size={14} />
+                              <span>{isOos ? "OOS" : "Add"}</span>
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   );

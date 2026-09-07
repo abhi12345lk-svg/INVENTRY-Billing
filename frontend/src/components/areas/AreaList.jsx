@@ -213,10 +213,35 @@ export default function AreaList({
         )}
 
         {!loading && !error && areas.length === 0 && (
-          <div style={{ padding: "60px", textAlign: "center", color: "var(--text-muted)" }}>
-            <MapPin size={40} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
-            <h4 style={{ color: "var(--text-main)", marginBottom: "4px" }}>No Areas Found</h4>
-            <p style={{ fontSize: "0.85rem" }}>Try adjusting your search or filters.</p>
+          <div style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+            <MapPin size={44} color="var(--text-dim)" style={{ marginBottom: "12px" }} />
+            <h4 style={{ color: "var(--text-main)", marginBottom: "6px", fontSize: "1.05rem" }}>No Operational Areas Defined</h4>
+            <p style={{ fontSize: "0.85rem", maxWidth: "380px", margin: "0 auto 16px auto" }}>
+              {search || statusFilter !== "ALL"
+                ? "No operational areas match your filter criteria. Try resetting search filters."
+                : "No delivery areas found. Create your first operational territory or city cluster to begin mapping beats."}
+            </p>
+            {onOpenAddModal && canModify && (
+              <button
+                onClick={onOpenAddModal}
+                style={{
+                  background: "var(--primary-600)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 18px",
+                  fontSize: "0.88rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+              >
+                <Plus size={16} />
+                <span>Create Area</span>
+              </button>
+            )}
           </div>
         )}
 
