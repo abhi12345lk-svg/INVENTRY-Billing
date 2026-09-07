@@ -12,12 +12,15 @@ import {
   CreditCard,
   ShoppingBag,
   Clock,
-  ArrowRight
+  ArrowRight,
+  FileText
 } from "lucide-react";
 
 import CreateOrder from "../orders/CreateOrder";
 import OrderList from "../orders/OrderList";
 import OrderDetails from "../orders/OrderDetails";
+import BillList from "../billing/BillList";
+import BillDetails from "../billing/BillDetails";
 
 export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
   const [customers, setCustomers] = useState([]);
@@ -26,9 +29,10 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
   const [search, setSearch] = useState("");
   const [selectedRoute, setSelectedRoute] = useState("ALL");
   const [assignedRoutes, setAssignedRoutes] = useState([]);
-  const [activeView, setActiveView] = useState("outlets"); // "outlets" | "orders"
+  const [activeView, setActiveView] = useState("outlets"); // "outlets" | "orders" | "bills"
   const [bookingCustomer, setBookingCustomer] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedBill, setSelectedBill] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // Fetch salesman's assigned routes and customers
@@ -178,6 +182,7 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
               onClick={() => {
                 setActiveView("orders");
                 setSelectedOrder(null);
+                setSelectedBill(null);
               }}
               style={{
                 padding: "8px 14px",
@@ -196,6 +201,30 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
             >
               <ShoppingBag size={14} />
               <span>My Orders</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveView("bills");
+                setSelectedOrder(null);
+                setSelectedBill(null);
+              }}
+              style={{
+                padding: "8px 14px",
+                borderRadius: "8px",
+                border: "none",
+                fontSize: "0.82rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: activeView === "bills" ? "var(--primary-600)" : "transparent",
+                color: activeView === "bills" ? "#ffffff" : "var(--text-muted)",
+                transition: "all 0.15s ease"
+              }}
+            >
+              <FileText size={14} />
+              <span>My Invoices</span>
             </button>
           </div>
 
@@ -548,6 +577,24 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate }) {
                 setFeedbackMessage("No assigned outlets found to book order.");
               }
             }}
+          />
+        )
+      )}
+
+      {/* Bills View */}
+      {activeView === "bills" && (
+        selectedBill ? (
+          <BillDetails
+            bill={selectedBill}
+            token={token}
+            user={user}
+            onBack={() => setSelectedBill(null)}
+          />
+        ) : (
+          <BillList
+            token={token}
+            user={user}
+            onSelectBill={(b) => setSelectedBill(b)}
           />
         )
       )}

@@ -144,6 +144,7 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
                 { id: "sales-customers", label: "Customers" },
                 { id: "sales-products", label: "Products" },
                 { id: "sales-orders", label: "Orders" },
+                { id: "sales-bills", label: "Bills & Invoices" },
                 { id: "sales-routes", label: "Routes & Beats" },
                 { id: "sales-areas", label: "Territory Areas" },
                 { id: "sales-assignments", label: "Beat Assignments" },

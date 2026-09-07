@@ -30,6 +30,8 @@ import AssignmentHistoryModal from "../assignments/AssignmentHistoryModal";
 import OrderList from "../orders/OrderList";
 import OrderDetails from "../orders/OrderDetails";
 import CreateOrder from "../orders/CreateOrder";
+import BillList from "../billing/BillList";
+import BillDetails from "../billing/BillDetails";
 import { AlertCircle, RefreshCw, Sparkles, Layers } from "lucide-react";
 
 export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, token }) {
@@ -71,6 +73,9 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
   // Step 6: Orders state
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
+
+  // Step 7: Billing & Invoices state
+  const [selectedBill, setSelectedBill] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
 
@@ -120,6 +125,7 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
           setActiveTab(tab);
           setSelectedCustomer(null);
           setSelectedOrder(null);
+          setSelectedBill(null);
         }} 
         exceptionCount={dashboardData?.exceptions?.length || 6}
       />
@@ -291,20 +297,57 @@ export default function OwnerDashboard({ user, onLogout, theme, onToggleTheme, t
             /* SALES ORDERS MANAGEMENT VIEW */
             selectedOrder ? (
               <OrderDetails
+                order={selectedOrder}
                 orderId={selectedOrder.id || selectedOrder._id}
                 token={token}
+                user={user}
                 userRole={user.role}
                 onBack={() => setSelectedOrder(null)}
                 onStatusUpdated={() => {
                   showToast("Order status successfully updated");
                 }}
+                onViewBill={(bill) => {
+                  setSelectedBill(bill);
+                  setActiveTab("sales-bills");
+                  showToast(`Viewing generated invoice ${bill.billNumber}`);
+                }}
               />
             ) : (
               <OrderList
                 token={token}
+                user={user}
                 userRole={user.role}
                 onSelectOrder={(ord) => setSelectedOrder(ord)}
                 onOpenCreate={() => setIsCreateOrderOpen(true)}
+                onViewBill={(bill) => {
+                  setSelectedBill(bill);
+                  setActiveTab("sales-bills");
+                  showToast(`Viewing generated invoice ${bill.billNumber}`);
+                }}
+              />
+            )
+          ) : activeTab === "sales-bills" ? (
+            /* BILLING & INVOICE MANAGEMENT VIEW */
+            selectedBill ? (
+              <BillDetails
+                bill={selectedBill}
+                token={token}
+                user={user}
+                onBack={() => setSelectedBill(null)}
+                onBillUpdated={(updated) => {
+                  setSelectedBill(updated);
+                  showToast("Invoice updated successfully");
+                }}
+              />
+            ) : (
+              <BillList
+                token={token}
+                user={user}
+                onSelectBill={(b) => setSelectedBill(b)}
+                onOpenGenerate={() => {
+                  setActiveTab("sales-orders");
+                  showToast("Select a confirmed/submitted order to generate a bill");
+                }}
               />
             )
           ) : (

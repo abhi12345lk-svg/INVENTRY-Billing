@@ -2,48 +2,52 @@ import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Plus, 
-  ShoppingBag, 
-  ChevronLeft, 
-  ChevronRight, 
+  FileText, 
   Eye, 
-  Calendar, 
-  Filter, 
-  XCircle,
-  AlertCircle,
-  CheckCircle2,
-  Store,
+  Lock, 
+  XCircle, 
+  CheckCircle2, 
+  AlertCircle, 
+  Store, 
   UserCheck,
+  Filter,
   Receipt
 } from "lucide-react";
-import OrderStatusBadge from "./OrderStatusBadge";
-import CancelOrderModal from "./CancelOrderModal";
+import { BillStatusBadge, PaymentStatusBadge } from "./BillStatusBadge";
+import LockBillModal from "./LockBillModal";
+import CancelBillModal from "./CancelBillModal";
+import GenerateBillModal from "./GenerateBillModal";
 
-export default function OrderList({ 
-  token, 
-  user, 
-  userRole,
-  onSelectOrder, 
-  onOpenCreate,
-  onOpenCreateModal,
-  onViewBill
+export default function BillList({
+  token,
+  user,
+  onSelectBill,
+  onOpenGenerate
 }) {
-  const [orders, setOrders] = useState([]);
+  const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
 
-  // Filters state
+  // Filters
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [billStatus, setBillStatus] = useState("ALL");
+  const [paymentStatus, setPaymentStatus] = useState("ALL");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
 
-  // Cancellation Modal
-  const [cancellingOrder, setCancellingOrder] = useState(null);
+  // Active modals
+  const [lockingBill, setLockingBill] = useState(null);
+  const [cancellingBill, setCancellingBill] = useState(null);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchOrders = async () => {
+  const canManageBills = ["SUPER_ADMIN", "ADMIN", "FINANCE", "SALES_MANAGER"].includes(user?.role);
+  const canLockCancel = ["SUPER_ADMIN", "ADMIN", "FINANCE"].includes(user?.role);
+
+  const fetchBills = async () => {
     setLoading(true);
     setError("");
 
@@ -52,78 +56,108 @@ export default function OrderList({
         page,
         limit,
         search: search.trim(),
-        status: statusFilter
+        billStatus,
+        paymentStatus
       });
 
-      // If user is salesman, calls /api/orders/my
-      const endpoint = user?.role === "SALESMAN"
-        ? `http://localhost:5005/api/orders/my?${queryParams.toString()}`
-        : `http://localhost:5005/api/orders?${queryParams.toString()}`;
-
-      const response = await fetch(endpoint, {
+      const response = await fetch(`http://localhost:5005/api/bills?${queryParams.toString()}`, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
       const json = await response.json();
 
       if (response.ok && json.success) {
-        setOrders(json.data || []);
+        setBills(json.data || []);
         setTotalPages(json.totalPages || 1);
         setTotalRecords(json.total || 0);
       } else {
-        setError(json.message || "Failed to load orders.");
+        setError(json.message || "Failed to load invoices.");
       }
     } catch (err) {
-      console.error("Fetch orders error:", err);
-      setError("Unable to connect to Orders API.");
+      console.error("Fetch bills error:", err);
+      setError("Unable to connect to Billing API.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      fetchOrders();
+    const timer = setTimeout(() => {
+      fetchBills();
     }, 300);
 
-    return () => clearTimeout(handler);
-  }, [search, statusFilter, page]);
-
-  const activeRole = user?.role || userRole;
-  const canManageBills = ["SUPER_ADMIN", "ADMIN", "FINANCE", "SALES_MANAGER"].includes(activeRole);
-
-  const handleGenerateBillForOrder = async (ord) => {
-    try {
-      const response = await fetch(`http://localhost:5005/api/bills/generate/${ord.id || ord._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      const json = await response.json();
-      if (response.ok && json.success) {
-        showToast(`Invoice ${json.data.billNumber} generated successfully.`);
-        if (onViewBill) {
-          onViewBill(json.data);
-        } else {
-          fetchOrders();
-        }
-      } else {
-        setError(json.message || "Failed to generate bill.");
-      }
-    } catch (err) {
-      console.error("Generate bill error:", err);
-      setError("Unable to connect to Billing API.");
-    }
-  };
+    return () => clearTimeout(timer);
+  }, [search, billStatus, paymentStatus, page]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 4000);
+    setTimeout(() => setToastMessage(""), 4500);
+  };
+
+  const handleLockConfirm = async () => {
+    if (!lockingBill) return;
+    setActionLoading(true);
+
+    try {
+      const billId = lockingBill.id || lockingBill._id;
+      const response = await fetch(`http://localhost:5005/api/bills/${billId}/lock`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const json = await response.json();
+
+      if (response.ok && json.success) {
+        showToast(json.message || `Invoice ${lockingBill.billNumber} is now locked 🔒!`);
+        setLockingBill(null);
+        fetchBills();
+      } else {
+        setError(json.message || "Failed to lock invoice.");
+      }
+    } catch (err) {
+      console.error("Lock bill error:", err);
+      setError("Unable to connect to Billing API.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelConfirm = async (reason) => {
+    if (!cancellingBill) return;
+    setActionLoading(true);
+
+    try {
+      const billId = cancellingBill.id || cancellingBill._id;
+      const response = await fetch(`http://localhost:5005/api/bills/${billId}/cancel`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
+      });
+
+      const json = await response.json();
+
+      if (response.ok && json.success) {
+        showToast(json.message || `Invoice ${cancellingBill.billNumber} cancelled.`);
+        setCancellingBill(null);
+        fetchBills();
+      } else {
+        setError(json.message || "Failed to cancel invoice.");
+      }
+    } catch (err) {
+      console.error("Cancel bill error:", err);
+      setError("Unable to connect to Billing API.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const format = (num) => `₹${Number(num || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -155,10 +189,10 @@ export default function OrderList({
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <h2 style={{ fontSize: "1.5rem", fontWeight: "800", color: "var(--text-main)", letterSpacing: "-0.02em" }}>
-              {user?.role === "SALESMAN" ? "My Beat Sales Orders" : "Sales Order Management"}
+              {user?.role === "SALESMAN" ? "My Customer Invoices" : "Billing & Invoice Management"}
             </h2>
             <span style={{
-              background: "var(--badge-brand-bg)",
+              background: "rgba(99, 102, 241, 0.15)",
               color: "var(--primary-400)",
               fontSize: "0.75rem",
               fontWeight: "700",
@@ -166,17 +200,17 @@ export default function OrderList({
               borderRadius: "20px",
               border: "1px solid rgba(99, 102, 241, 0.3)"
             }}>
-              {totalRecords} Orders
+              {totalRecords} Invoices
             </span>
           </div>
           <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginTop: "4px" }}>
-            Real-time field orders, draft lifecycle, and pricing values ready for billing
+            Controlled FMCG invoices, bill locking integrity, and live outstanding balances
           </p>
         </div>
 
-        {onOpenCreateModal && (
+        {canManageBills && (
           <button
-            onClick={onOpenCreateModal}
+            onClick={() => setShowGenerateModal(true)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -194,7 +228,7 @@ export default function OrderList({
             }}
           >
             <Plus size={18} />
-            <span>Book New Order</span>
+            <span>Generate Bill</span>
           </button>
         )}
       </div>
@@ -214,7 +248,7 @@ export default function OrderList({
         {/* Search */}
         <div style={{
           position: "relative",
-          flex: "1 1 280px",
+          flex: "1 1 260px",
           minWidth: "220px"
         }}>
           <Search size={18} style={{
@@ -231,7 +265,7 @@ export default function OrderList({
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search order number, outlet, code..."
+            placeholder="Search invoice #, customer name or code..."
             style={{
               width: "100%",
               padding: "10px 14px 10px 42px",
@@ -245,31 +279,59 @@ export default function OrderList({
           />
         </div>
 
-        {/* Status Filter */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Status:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            style={{
-              padding: "9px 14px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              background: "var(--bg-secondary)",
-              color: "var(--text-main)",
-              fontSize: "0.875rem",
-              outline: "none",
-              cursor: "pointer"
-            }}
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="DRAFT">DRAFT</option>
-            <option value="SUBMITTED">SUBMITTED</option>
-            <option value="CANCELLED">CANCELLED</option>
-          </select>
+        {/* Filters Group */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Bill:</span>
+            <select
+              value={billStatus}
+              onChange={(e) => {
+                setBillStatus(e.target.value);
+                setPage(1);
+              }}
+              style={{
+                padding: "9px 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-secondary)",
+                color: "var(--text-main)",
+                fontSize: "0.85rem",
+                outline: "none",
+                cursor: "pointer"
+              }}
+            >
+              <option value="ALL">All Bills</option>
+              <option value="GENERATED">Generated</option>
+              <option value="LOCKED">Locked 🔒</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Payment:</span>
+            <select
+              value={paymentStatus}
+              onChange={(e) => {
+                setPaymentStatus(e.target.value);
+                setPage(1);
+              }}
+              style={{
+                padding: "9px 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                background: "var(--bg-secondary)",
+                color: "var(--text-main)",
+                fontSize: "0.85rem",
+                outline: "none",
+                cursor: "pointer"
+              }}
+            >
+              <option value="ALL">All Payments</option>
+              <option value="UNPAID">Unpaid</option>
+              <option value="PARTIAL">Partial</option>
+              <option value="PAID">Paid</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -291,7 +353,7 @@ export default function OrderList({
         </div>
       )}
 
-      {/* Orders Table Container */}
+      {/* Invoices Table Container */}
       <div className="glass-card" style={{
         borderRadius: "14px",
         overflow: "hidden",
@@ -303,7 +365,7 @@ export default function OrderList({
             <thead>
               <tr style={{ background: "var(--table-header-bg)", borderBottom: "1px solid var(--border-color)" }}>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Order #
+                  Invoice Number
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Date
@@ -314,20 +376,23 @@ export default function OrderList({
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Salesman
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Route
-                </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
                   Items
                 </th>
-                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
-                  Quantity
+                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
+                  Total Amount
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
-                  Amount
+                  Paid Amount
+                </th>
+                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
+                  Outstanding
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Status
+                  Bill Status
+                </th>
+                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Payment
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
                   Actions
@@ -337,35 +402,38 @@ export default function OrderList({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    Loading orders...
+                  <td colSpan={11} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                    Loading invoices...
                   </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : bills.length === 0 ? (
                 <tr>
-                  <td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-                    No orders found matching the filter criteria.
+                  <td colSpan={11} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                    No invoices found matching criteria.
                   </td>
                 </tr>
               ) : (
-                orders.map((ord) => (
-                  <tr 
-                    key={ord.id}
+                bills.map((b) => (
+                  <tr
+                    key={b.id}
                     style={{
                       borderBottom: "1px solid var(--border-color)",
                       transition: "background 0.15s ease"
                     }}
                   >
-                    {/* Order # */}
+                    {/* Invoice Number */}
                     <td style={{ padding: "16px 18px" }}>
-                      <div style={{ fontSize: "0.875rem", fontFamily: "monospace", fontWeight: "700", color: "var(--primary-400)" }}>
-                        {ord.orderNumber}
+                      <div style={{ fontSize: "0.875rem", fontFamily: "monospace", fontWeight: "800", color: "var(--primary-400)" }}>
+                        {b.billNumber}
+                      </div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                        Ref: {b.orderNumber}
                       </div>
                     </td>
 
                     {/* Date */}
                     <td style={{ padding: "16px 18px", fontSize: "0.85rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
-                      {new Date(ord.orderDate || ord.createdAt).toLocaleDateString("en-IN", {
+                      {new Date(b.billDate || b.createdAt).toLocaleDateString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric"
@@ -390,10 +458,10 @@ export default function OrderList({
                         </div>
                         <div>
                           <span style={{ fontWeight: "700", color: "var(--text-main)", fontSize: "0.9rem" }}>
-                            {ord.customer?.shopName}
+                            {b.customer?.customerName}
                           </span>
                           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                            {ord.customer?.customerCode}
+                            {b.customer?.customerCode} • {b.customer?.routeName || "Beat"}
                           </div>
                         </div>
                       </div>
@@ -404,24 +472,9 @@ export default function OrderList({
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <UserCheck size={14} style={{ color: "var(--primary-400)" }} />
                         <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-main)" }}>
-                          {ord.salesman?.salesmanName || "Unassigned"}
+                          {b.salesman?.salesmanName || "Rahul Kumar"}
                         </span>
                       </div>
-                    </td>
-
-                    {/* Route */}
-                    <td style={{ padding: "16px 18px" }}>
-                      <span style={{
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                        background: "var(--bg-secondary)",
-                        border: "1px solid var(--border-color)",
-                        fontSize: "0.78rem",
-                        fontWeight: "600",
-                        color: "var(--text-main)"
-                      }}>
-                        {ord.route?.routeName || ord.customer?.routeName || "General Route"}
-                      </span>
                     </td>
 
                     {/* Items */}
@@ -435,41 +488,45 @@ export default function OrderList({
                         fontWeight: "600",
                         color: "var(--text-main)"
                       }}>
-                        {ord.pricingSummary?.totalItems || ord.items?.length || 0} Lines
+                        {b.totalItems || b.items?.length || 0} Lines
                       </span>
                     </td>
 
-                    {/* Quantity */}
-                    <td style={{ padding: "16px 18px", textAlign: "center" }}>
-                      <span style={{
-                        padding: "3px 8px",
-                        borderRadius: "10px",
-                        background: "rgba(99, 102, 241, 0.1)",
-                        color: "var(--primary-400)",
-                        fontSize: "0.75rem",
-                        fontWeight: "700"
-                      }}>
-                        {ord.pricingSummary?.totalQuantity || ord.items?.reduce((s, i) => s + (i.quantity || 0), 0) || 0} Qty
-                      </span>
-                    </td>
-
-                    {/* Amount */}
+                    {/* Total Amount */}
                     <td style={{ padding: "16px 18px", textAlign: "right" }}>
                       <strong style={{ fontSize: "0.95rem", color: "var(--text-main)" }}>
-                        {format(ord.pricingSummary?.grandTotal)}
+                        {format(b.totalAmount)}
                       </strong>
                     </td>
 
-                    {/* Status */}
-                    <td style={{ padding: "16px 18px" }}>
-                      <OrderStatusBadge status={ord.status} />
+                    {/* Paid Amount */}
+                    <td style={{ padding: "16px 18px", textAlign: "right", fontSize: "0.85rem", color: b.paidAmount > 0 ? "#10b981" : "var(--text-muted)", fontWeight: "600" }}>
+                      {format(b.paidAmount)}
                     </td>
 
-                    {/* Action */}
+                    {/* Outstanding */}
                     <td style={{ padding: "16px 18px", textAlign: "right" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+                      <strong style={{ fontSize: "0.95rem", color: b.outstandingAmount > 0 ? "#f87171" : "#10b981" }}>
+                        {format(b.outstandingAmount)}
+                      </strong>
+                    </td>
+
+                    {/* Bill Status */}
+                    <td style={{ padding: "16px 18px" }}>
+                      <BillStatusBadge status={b.billStatus} />
+                    </td>
+
+                    {/* Payment Status */}
+                    <td style={{ padding: "16px 18px" }}>
+                      <PaymentStatusBadge status={b.paymentStatus} />
+                    </td>
+
+                    {/* Actions */}
+                    <td style={{ padding: "16px 18px", textAlign: "right" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "6px" }}>
                         <button
-                          onClick={() => onSelectOrder(ord)}
+                          onClick={() => onSelectBill(b)}
+                          title="View Invoice"
                           style={{
                             padding: "6px 10px",
                             borderRadius: "6px",
@@ -484,37 +541,37 @@ export default function OrderList({
                             gap: "4px"
                           }}
                         >
-                          <Eye size={14} />
+                          <Eye size={13} />
                           <span>View</span>
                         </button>
 
-                        {canManageBills && (ord.status === "SUBMITTED" || ord.status === "CONFIRMED") && (
+                        {canLockCancel && b.billStatus === "GENERATED" && (
                           <button
-                            onClick={() => handleGenerateBillForOrder(ord)}
-                            title="Generate Bill from Confirmed Order"
+                            onClick={() => setLockingBill(b)}
+                            title="Lock Bill"
                             style={{
-                              padding: "6px 10px",
+                              padding: "6px 9px",
                               borderRadius: "6px",
-                              border: "1px solid rgba(16, 185, 129, 0.3)",
-                              background: "rgba(16, 185, 129, 0.12)",
+                              border: "none",
+                              background: "rgba(16, 185, 129, 0.15)",
                               color: "#10b981",
-                              fontSize: "0.8rem",
-                              fontWeight: "700",
                               cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
-                              gap: "4px"
+                              gap: "4px",
+                              fontSize: "0.78rem",
+                              fontWeight: "700"
                             }}
                           >
-                            <Receipt size={13} />
-                            <span>Bill</span>
+                            <Lock size={12} />
+                            <span>Lock</span>
                           </button>
                         )}
 
-                        {ord.status !== "CANCELLED" && (
+                        {canLockCancel && b.billStatus !== "CANCELLED" && (
                           <button
-                            onClick={() => setCancellingOrder(ord)}
-                            title="Cancel Order"
+                            onClick={() => setCancellingBill(b)}
+                            title="Cancel Invoice"
                             style={{
                               padding: "6px 8px",
                               borderRadius: "6px",
@@ -550,55 +607,73 @@ export default function OrderList({
           color: "var(--text-muted)"
         }}>
           <div>
-            Showing {orders.length > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, totalRecords)} of {totalRecords} orders
+            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalRecords} total invoices)
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+          <div style={{ display: "flex", gap: "8px" }}>
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
               style={{
-                padding: "6px 10px",
+                padding: "6px 12px",
                 borderRadius: "6px",
                 border: "1px solid var(--border-color)",
-                background: page <= 1 ? "transparent" : "var(--bg-secondary)",
-                color: page <= 1 ? "var(--border-color)" : "var(--text-main)",
+                background: "var(--bg-secondary)",
+                color: page <= 1 ? "var(--text-muted)" : "var(--text-main)",
                 cursor: page <= 1 ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center"
+                fontSize: "0.8rem",
+                fontWeight: "600"
               }}
             >
-              <ChevronLeft size={16} />
+              Previous
             </button>
-            <span>Page {page} of {totalPages || 1}</span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
               style={{
-                padding: "6px 10px",
+                padding: "6px 12px",
                 borderRadius: "6px",
                 border: "1px solid var(--border-color)",
-                background: page >= totalPages ? "transparent" : "var(--bg-secondary)",
-                color: page >= totalPages ? "var(--border-color)" : "var(--text-main)",
+                background: "var(--bg-secondary)",
+                color: page >= totalPages ? "var(--text-muted)" : "var(--text-main)",
                 cursor: page >= totalPages ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center"
+                fontSize: "0.8rem",
+                fontWeight: "600"
               }}
             >
-              <ChevronRight size={16} />
+              Next
             </button>
           </div>
         </div>
       </div>
 
-      {/* Cancellation Modal */}
-      {cancellingOrder && (
-        <CancelOrderModal
+      {/* Modals */}
+      {lockingBill && (
+        <LockBillModal
+          bill={lockingBill}
+          onClose={() => setLockingBill(null)}
+          onConfirm={handleLockConfirm}
+          loading={actionLoading}
+        />
+      )}
+
+      {cancellingBill && (
+        <CancelBillModal
+          bill={cancellingBill}
+          onClose={() => setCancellingBill(null)}
+          onConfirm={handleCancelConfirm}
+          loading={actionLoading}
+        />
+      )}
+
+      {showGenerateModal && (
+        <GenerateBillModal
           token={token}
-          order={cancellingOrder}
-          onClose={() => setCancellingOrder(null)}
-          onSuccess={(msg) => {
-            showToast(msg);
-            fetchOrders();
+          user={user}
+          onClose={() => setShowGenerateModal(false)}
+          onSuccess={(newBill, msg) => {
+            showToast(msg || `Invoice ${newBill.billNumber} generated successfully!`);
+            fetchBills();
           }}
         />
       )}

@@ -16,4 +16,4 @@ export const connectDB = async () => {
     console.log("ℹ️ Continuing with Mongoose schema & repository fallback mode.");
     return false;
   }
-};
+};export const isDatabaseConnected = () => mongoose.connection.readyState === 1;

@@ -10,6 +10,7 @@ import routeRoutes from "./modules/routes/route.routes.js";
 import salesmanRoutes from "./modules/salesmen/salesman.routes.js";
 import assignmentRoutes from "./modules/assignments/assignment.routes.js";
 import orderRoutes from "./modules/orders/order.routes.js";
+import billingRoutes from "./modules/billing/billing.routes.js";
 import { connectDB } from "./config/database.js";
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use("/api/routes", routeRoutes);
 app.use("/api/salesmen", salesmanRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/bills", billingRoutes);
 
 // Health Check Endpoint
 app.get("/api/health", (req, res) => {

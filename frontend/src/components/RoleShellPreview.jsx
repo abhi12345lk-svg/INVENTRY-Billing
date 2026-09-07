@@ -32,10 +32,14 @@ import ProductDetails from "./products/ProductDetails";
 import ProductStatusModal from "./products/ProductStatusModal";
 import SalesmanBeatDashboard from "./salesman/SalesmanBeatDashboard";
 import SalesManagerPanel from "./salesmanager/SalesManagerPanel";
-import { Package } from "lucide-react";
+import OrderList from "./orders/OrderList";
+import OrderDetails from "./orders/OrderDetails";
+import BillList from "./billing/BillList";
+import BillDetails from "./billing/BillDetails";
+import { Package, FileText, Receipt } from "lucide-react";
 
 export default function RoleShellPreview({ user, onLogout, theme, onToggleTheme, token }) {
-  const [viewMode, setViewMode] = useState("overview"); // "overview", "customers", or "products"
+  const [viewMode, setViewMode] = useState("overview"); // "overview", "customers", "products", "orders", or "bills"
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [statusTargetCustomer, setStatusTargetCustomer] = useState(null);
@@ -46,6 +50,10 @@ export default function RoleShellPreview({ user, onLogout, theme, onToggleTheme,
   const [editingProduct, setEditingProduct] = useState(null);
   const [statusTargetProduct, setStatusTargetProduct] = useState(null);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+
+  // Order & Billing state
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedBill, setSelectedBill] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
 
@@ -170,6 +178,44 @@ export default function RoleShellPreview({ user, onLogout, theme, onToggleTheme,
               <Package size={14} />
               <span>Product Master</span>
             </button>
+            <button
+              onClick={() => { setViewMode("orders"); setSelectedOrder(null); }}
+              style={{
+                background: viewMode === "orders" ? "var(--badge-brand-bg)" : "transparent",
+                color: viewMode === "orders" ? "var(--primary-400)" : "var(--text-muted)",
+                border: "none",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                fontSize: "0.82rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              <ShoppingBag size={14} />
+              <span>Orders</span>
+            </button>
+            <button
+              onClick={() => { setViewMode("bills"); setSelectedBill(null); }}
+              style={{
+                background: viewMode === "bills" ? "var(--badge-brand-bg)" : "transparent",
+                color: viewMode === "bills" ? "var(--primary-400)" : "var(--text-muted)",
+                border: "none",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                fontSize: "0.82rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              <Receipt size={14} />
+              <span>Bills & Invoices</span>
+            </button>
           </div>
 
           {/* Theme Switcher Button */}
@@ -292,6 +338,57 @@ export default function RoleShellPreview({ user, onLogout, theme, onToggleTheme,
               onOpenAddModal={() => setIsAddProductModalOpen(true)}
               onOpenEditModal={(p) => setEditingProduct(p)}
               onOpenStatusModal={(p) => setStatusTargetProduct(p)}
+            />
+          )
+        ) : viewMode === "orders" ? (
+          selectedOrder ? (
+            <OrderDetails
+              order={selectedOrder}
+              orderId={selectedOrder.id || selectedOrder._id}
+              token={token}
+              user={user}
+              userRole={user.role}
+              onBack={() => setSelectedOrder(null)}
+              onViewBill={(b) => {
+                setSelectedBill(b);
+                setViewMode("bills");
+                showToast(`Viewing invoice ${b.billNumber}`);
+              }}
+            />
+          ) : (
+            <OrderList
+              token={token}
+              user={user}
+              userRole={user.role}
+              onSelectOrder={(ord) => setSelectedOrder(ord)}
+              onViewBill={(b) => {
+                setSelectedBill(b);
+                setViewMode("bills");
+                showToast(`Viewing invoice ${b.billNumber}`);
+              }}
+            />
+          )
+        ) : viewMode === "bills" ? (
+          selectedBill ? (
+            <BillDetails
+              bill={selectedBill}
+              token={token}
+              user={user}
+              onBack={() => setSelectedBill(null)}
+              onBillUpdated={(updated) => {
+                setSelectedBill(updated);
+                showToast("Invoice updated successfully");
+              }}
+            />
+          ) : (
+            <BillList
+              token={token}
+              user={user}
+              onSelectBill={(b) => setSelectedBill(b)}
+              onOpenGenerate={() => {
+                setViewMode("orders");
+                showToast("Select a confirmed order to generate bill");
+              }}
             />
           )
         ) : isSalesman ? (

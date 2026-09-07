@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ArrowLeft, 
   Store, 
@@ -12,7 +12,8 @@ import {
   FileText,
   AlertCircle,
   CheckCircle2,
-  ShieldAlert
+  ShieldAlert,
+  Receipt
 } from "lucide-react";
 import OrderStatusBadge from "./OrderStatusBadge";
 import OrderItemTable from "./OrderItemTable";
@@ -21,10 +22,13 @@ import CancelOrderModal from "./CancelOrderModal";
 
 export default function OrderDetails({ 
   order, 
+  orderId,
   token, 
   user, 
+  userRole,
   onBack, 
-  onOrderUpdated 
+  onOrderUpdated,
+  onViewBill 
 }) {
   const [currentOrder, setCurrentOrder] = useState(order);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -32,8 +36,33 @@ export default function OrderDetails({
   const [successMsg, setSuccessMsg] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  const canSubmit = currentOrder.status === "DRAFT";
-  const canCancel = currentOrder.status !== "CANCELLED";
+  const activeRole = user?.role || userRole;
+  const orderTargetId = currentOrder?.id || currentOrder?._id || orderId;
+
+  const fetchOrderById = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5005/api/orders/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setCurrentOrder(json.data);
+      }
+    } catch (err) {
+      console.error("Failed to load order:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentOrder && orderId) {
+      fetchOrderById(orderId);
+    }
+  }, [orderId]);
+
+  const canSubmit = currentOrder?.status === "DRAFT";
+  const canCancel = currentOrder?.status && currentOrder.status !== "CANCELLED";
+  const canGenerateBill = (currentOrder?.status === "SUBMITTED" || currentOrder?.status === "CONFIRMED") && 
+    ["SUPER_ADMIN", "ADMIN", "FINANCE", "SALES_MANAGER"].includes(activeRole);
 
   const showNotification = (msg) => {
     setSuccessMsg(msg);
@@ -41,8 +70,9 @@ export default function OrderDetails({
   };
 
   const handleRefreshOrder = async () => {
+    if (!orderTargetId) return;
     try {
-      const res = await fetch(`http://localhost:5005/api/orders/${currentOrder.id}`, {
+      const res = await fetch(`http://localhost:5005/api/orders/${orderTargetId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const json = await res.json();
@@ -55,8 +85,41 @@ export default function OrderDetails({
     }
   };
 
+  const handleGenerateBill = async () => {
+    setLoadingAction(true);
+    setError("");
+
+    try {
+      const response = await fetch(`http://localhost:5005/api/bills/generate/${orderTargetId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const json = await response.json();
+
+      if (response.ok && json.success) {
+        showNotification(`Invoice ${json.data.billNumber} generated successfully.`);
+        if (onViewBill) {
+          onViewBill(json.data);
+        } else {
+          await handleRefreshOrder();
+        }
+      } else {
+        setError(json.message || "Failed to generate bill.");
+      }
+    } catch (err) {
+      console.error("Generate bill error:", err);
+      setError("Unable to connect to Billing API.");
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
   const handleSubmitDraft = async () => {
-    if (!window.confirm(`Are you sure you want to finalize and submit ${currentOrder.orderNumber}?`)) {
+    if (!window.confirm(`Are you sure you want to finalize and submit ${currentOrder?.orderNumber}?`)) {
       return;
     }
 
@@ -64,7 +127,7 @@ export default function OrderDetails({
     setError("");
 
     try {
-      const response = await fetch(`http://localhost:5005/api/orders/${currentOrder.id}/submit`, {
+      const response = await fetch(`http://localhost:5005/api/orders/${orderTargetId}/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,6 +150,14 @@ export default function OrderDetails({
       setLoadingAction(false);
     }
   };
+
+  if (!currentOrder) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+        Loading order details...
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -114,6 +185,30 @@ export default function OrderDetails({
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {canGenerateBill && (
+            <button
+              onClick={handleGenerateBill}
+              disabled={loadingAction}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#ffffff",
+                border: "none",
+                padding: "8px 18px",
+                borderRadius: "10px",
+                fontSize: "0.85rem",
+                fontWeight: "700",
+                cursor: loadingAction ? "not-allowed" : "pointer",
+                boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)"
+              }}
+            >
+              <Receipt size={15} />
+              <span>{loadingAction ? "Generating..." : "Generate Bill 🧾"}</span>
+            </button>
+          )}
+
           {canSubmit && (
             <button
               onClick={handleSubmitDraft}
