@@ -141,14 +141,13 @@ export default function Sidebar({ activeTab, onTabSelect, exceptionCount = 6 }) 
           {salesExpanded && (
             <div style={{ paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
               {[
-                { id: "sales-today", label: "Today's Sales" },
+                { id: "sales-customers", label: "Customers" },
+                { id: "sales-products", label: "Products" },
                 { id: "sales-orders", label: "Orders" },
-                { id: "sales-salesmen", label: "Sales Force & DSR" },
                 { id: "sales-routes", label: "Routes & Beats" },
                 { id: "sales-areas", label: "Territory Areas" },
                 { id: "sales-assignments", label: "Beat Assignments" },
-                { id: "sales-customers", label: "Customers" },
-                { id: "sales-products", label: "Products" }
+                { id: "sales-salesmen", label: "Sales Force & DSR" }
               ].map((item) => (
                 <button
                   key={item.id}

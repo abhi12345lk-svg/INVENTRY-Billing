@@ -889,27 +889,54 @@ export default function CreateOrder({
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                onSuccess(`Order ${submittedOrderResult.orderNumber} submitted successfully!`);
-                onClose();
-              }}
-              style={{
-                width: "100%",
-                padding: "12px 24px",
-                borderRadius: "10px",
-                border: "none",
-                background: "var(--primary-600)",
-                color: "#ffffff",
-                fontSize: "0.95rem",
-                fontWeight: "700",
-                cursor: "pointer",
-                boxShadow: "0 8px 20px rgba(99, 102, 241, 0.35)",
-                transition: "all 0.15s ease"
-              }}
-            >
-              Done / View Orders
-            </button>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => {
+                  onSuccess(`Order ${submittedOrderResult.orderNumber} submitted successfully!`);
+                  onClose();
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: "var(--primary-600)",
+                  color: "#ffffff",
+                  fontSize: "0.92rem",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  boxShadow: "0 8px 20px rgba(99, 102, 241, 0.35)",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                VIEW ORDER
+              </button>
+
+              <button
+                onClick={() => {
+                  setSubmittedOrderResult(null);
+                  setOrderItems([]);
+                  setNotes("");
+                  if (!preselectedCustomer && customers.length > 0) {
+                    setSelectedCustomer(customers[0]);
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px 20px",
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-secondary)",
+                  color: "var(--text-main)",
+                  fontSize: "0.92rem",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                CREATE NEW ORDER
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -287,27 +287,30 @@ export default function OrderList({
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
                   Items
                 </th>
+                <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center" }}>
+                  Quantity
+                </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
-                  Grand Total
+                  Amount
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Status
                 </th>
                 <th style={{ padding: "14px 18px", fontSize: "0.75rem", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
-                  Action
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                  <td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                     Loading orders...
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                  <td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                     No orders found matching the filter criteria.
                   </td>
                 </tr>
@@ -403,7 +406,21 @@ export default function OrderList({
                       </span>
                     </td>
 
-                    {/* Grand Total */}
+                    {/* Quantity */}
+                    <td style={{ padding: "16px 18px", textAlign: "center" }}>
+                      <span style={{
+                        padding: "3px 8px",
+                        borderRadius: "10px",
+                        background: "rgba(99, 102, 241, 0.1)",
+                        color: "var(--primary-400)",
+                        fontSize: "0.75rem",
+                        fontWeight: "700"
+                      }}>
+                        {ord.pricingSummary?.totalQuantity || ord.items?.reduce((s, i) => s + (i.quantity || 0), 0) || 0} Qty
+                      </span>
+                    </td>
+
+                    {/* Amount */}
                     <td style={{ padding: "16px 18px", textAlign: "right" }}>
                       <strong style={{ fontSize: "0.95rem", color: "var(--text-main)" }}>
                         {format(ord.pricingSummary?.grandTotal)}
