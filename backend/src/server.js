@@ -63,7 +63,7 @@ app.get("/api/health", (req, res) => {
 
 export default app;
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL || process.env.PORT) {
   app.listen(PORT, () => {
     console.log(`=================================================`);
     console.log(`🚀 Distributor ERP Backend running on port ${PORT}`);
