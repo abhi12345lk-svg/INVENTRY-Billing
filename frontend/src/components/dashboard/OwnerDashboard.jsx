@@ -97,6 +97,11 @@ export default function OwnerDashboard({ user, onLogout, token }) {
   const [toastMessage, setToastMessage] = useState("");
 
   const DEFAULT_OWNER_METRICS = {
+    network: {
+      totalOutlets: 40,
+      activeSalesmen: 3,
+      activeRoutes: 4
+    },
     summary: {
       todaysSales: 1485200,
       todaysSalesTrend: "+12.4%",
@@ -107,6 +112,17 @@ export default function OwnerDashboard({ user, onLogout, token }) {
       activeCustomers: 3850,
       activeRoutes: 24,
       totalProducts: 240
+    },
+    sales: {
+      weeklyTrend: [
+        { day: "Sat", sales: 1120000 },
+        { day: "Sun", sales: 850000 },
+        { day: "Mon", sales: 1340000 },
+        { day: "Tue", sales: 1420000 },
+        { day: "Wed", sales: 1290000 },
+        { day: "Thu", sales: 1560000 },
+        { day: "Fri", sales: 1485200 }
+      ]
     },
     salesData: {
       weeklyTrend: [
@@ -671,7 +687,7 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                         textAlign: "center"
                       }}>
                         <div style={{ fontSize: "0.72rem", color: "var(--text-dim)", textTransform: "uppercase", fontWeight: "700" }}>Outlets</div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "var(--text-main)" }}>{dashboardData.network.totalOutlets}</div>
+                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "var(--text-main)" }}>{dashboardData?.network?.totalOutlets ?? dashboardData?.summary?.totalCustomers ?? 40}</div>
                       </div>
 
                       <div style={{
@@ -682,7 +698,7 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                         textAlign: "center"
                       }}>
                         <div style={{ fontSize: "0.72rem", color: "var(--text-dim)", textTransform: "uppercase", fontWeight: "700" }}>Salesmen</div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "var(--primary-400)" }}>{dashboardData.network.activeSalesmen}</div>
+                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "var(--primary-400)" }}>{dashboardData?.network?.activeSalesmen ?? 3}</div>
                       </div>
 
                       <div style={{
@@ -693,17 +709,17 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                         textAlign: "center"
                       }}>
                         <div style={{ fontSize: "0.72rem", color: "var(--text-dim)", textTransform: "uppercase", fontWeight: "700" }}>Beats / Routes</div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "#10b981" }}>{dashboardData.network.activeRoutes || 24}</div>
+                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "#10b981" }}>{dashboardData?.network?.activeRoutes ?? 4}</div>
                       </div>
                     </div>
                   </div>
 
                   {/* 6 Core KPI Grid Cards */}
-                  <KpiGrid summary={dashboardData.summary} />
+                  <KpiGrid summary={dashboardData?.summary || {}} />
 
                   {/* Actionable Exception Control Center */}
                   <ExceptionPanel 
-                    exceptions={dashboardData.exceptions} 
+                    exceptions={dashboardData?.exceptions || []} 
                     onSelectException={(exc) => {
                       console.log("Selected exception:", exc);
                       setActiveTab("exceptions");
@@ -714,8 +730,8 @@ export default function OwnerDashboard({ user, onLogout, token }) {
 
                   {/* Sales Chart & Collection Breakdown Grid */}
                   <div className="responsive-split-grid">
-                    <SalesChart salesData={dashboardData.sales} />
-                    <CollectionSummary collections={dashboardData.collections} />
+                    <SalesChart salesData={dashboardData?.sales || dashboardData?.salesData || { weeklyTrend: [] }} />
+                    <CollectionSummary collections={dashboardData?.collections || { total: 0, breakdown: [] }} />
                   </div>
 
                   {/* Recent Activity Feed */}

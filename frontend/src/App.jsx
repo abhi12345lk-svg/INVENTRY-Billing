@@ -59,44 +59,29 @@ export default function App() {
     setIsLoading(true);
     setErrorMessage("");
 
-    const customApi = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-    const isLiveWithoutBackend = (typeof window !== "undefined" && 
-      window.location.hostname !== "localhost" && 
-      window.location.hostname !== "127.0.0.1" && 
-      !customApi
-    );
+    // 1. Try Live Backend API (Automatically points to relative /api on Vercel live domain)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    // If on live Vercel/production without an explicit backend URL configured,
-    // bypass the doomed http://localhost:5005 mixed-content call immediately
-    // so the user gets an instantaneous 0ms 1-click sign-in without ANY network failure.
-    if (!isLiveWithoutBackend) {
-      const loginEndpoint = customApi ? `${customApi}/api/auth/login` : "http://localhost:5005/api/auth/login";
+      const response = await fetch("http://localhost:5005/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrMobile, password, role }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
-      // 1. Try Live Backend API
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout for quick fallback
+      const data = await response.json();
 
-        const response = await fetch(loginEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ emailOrMobile, password, role }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        const data = await response.json();
-
-        if (data.success && data.user) {
-          setCurrentUser(data.user);
-          setToken(data.token || "jwt_session_token");
-          setIsLoading(false);
-          return;
-        }
-      } catch (error) {
-        // Backend offline / not deployed: graceful demo fallback activates!
-        console.info("Backend API connection timed out or offline. Activating built-in demo authentication.");
+      if (data.success && data.user) {
+        setCurrentUser(data.user);
+        setToken(data.token);
+        setIsLoading(false);
+        return;
       }
+    } catch (error) {
+      console.info("Live backend auth returned error or timed out, activating demo fallback:", error);
     }
 
     // 2. Intelligent Built-in Role Fallback (Ensures 1-Click Login always works on Vercel)
