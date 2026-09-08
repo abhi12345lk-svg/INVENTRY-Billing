@@ -71,7 +71,7 @@ export const findAreaByName = async (name) => {
 };
 
 export const createAreaRecord = async (areaData) => {
-  const newId = `area-${Date.now()}`;
+  const newId = areaData.id || `area-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const code = generateAreaCode();
   const now = new Date().toISOString();
 

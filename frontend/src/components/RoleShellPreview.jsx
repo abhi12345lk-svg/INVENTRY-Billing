@@ -38,21 +38,12 @@ import BillDetails from "./billing/BillDetails";
 import PaymentList from "./payments/PaymentList";
 import PaymentDetails from "./payments/PaymentDetails";
 import UnmatchedQueue from "./payments/UnmatchedQueue";
-import InventoryDashboard from "./inventory/InventoryDashboard";
-import InventoryList from "./inventory/InventoryList";
-import InventoryDetails from "./inventory/InventoryDetails";
-import StockMovementHistory from "./inventory/StockMovementHistory";
-import DeliveryDashboard from "./delivery/DeliveryDashboard";
-import ReadyForDispatch from "./delivery/ReadyForDispatch";
-import DeliveryTripList from "./delivery/DeliveryTripList";
-import DeliveryTripDetails from "./delivery/DeliveryTripDetails";
-import VehicleList from "./delivery/VehicleList";
 import ExceptionDashboard from "./exceptions/ExceptionDashboard";
 import ExceptionDetails from "./exceptions/ExceptionDetails";
 import ApprovalDashboard from "./approvals/ApprovalDashboard";
 import ApprovalDetails from "./approvals/ApprovalDetails";
 import ExecutiveReports from "./reports/ExecutiveReports";
-import { Package, FileText, Receipt, Boxes, Truck, FileSpreadsheet } from "lucide-react";
+import { Package, FileText, Receipt, FileSpreadsheet } from "lucide-react";
 
 export default function RoleShellPreview({ user, onLogout, token }) {
   const [viewMode, setViewMode] = useState("overview"); // "overview", "customers", "products", "orders", or "bills"
@@ -72,14 +63,6 @@ export default function RoleShellPreview({ user, onLogout, token }) {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
 
-  // Inventory state
-  const [selectedInventory, setSelectedInventory] = useState(null);
-  const [inventorySubTab, setInventorySubTab] = useState("overview"); // "overview", "stock", "movements"
-
-  // Delivery state
-  const [selectedTrip, setSelectedTrip] = useState(null);
-  const [deliverySubTab, setDeliverySubTab] = useState("dashboard"); // "dashboard", "ready", "trips", "fleet"
-
   // Step 11: Exception & Approval state
   const [selectedException, setSelectedException] = useState(null);
   const [selectedApproval, setSelectedApproval] = useState(null);
@@ -87,7 +70,6 @@ export default function RoleShellPreview({ user, onLogout, token }) {
   const [toastMessage, setToastMessage] = useState("");
 
   const isOwner = user.role === "SUPER_ADMIN";
-  const isFinance = user.role === "FINANCE";
   const isSalesMgr = user.role === "SALES_MANAGER";
   const isSalesman = user.role === "SALESMAN";
 
@@ -103,48 +85,51 @@ export default function RoleShellPreview({ user, onLogout, token }) {
         background: "var(--header-bg)",
         backdropFilter: "blur(20px)",
         borderBottom: "1px solid var(--border-card)",
-        padding: "12px 28px",
+        padding: "10px 18px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "10px",
         position: "sticky",
         top: 0,
         zIndex: 100
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <div style={{
             background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-            width: "40px",
-            height: "40px",
-            borderRadius: "12px",
+            width: "36px",
+            height: "36px",
+            borderRadius: "10px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "#ffffff",
             fontWeight: "900",
-            fontSize: "1.15rem",
-            boxShadow: "0 8px 20px rgba(99, 102, 241, 0.4)"
+            fontSize: "1.05rem",
+            boxShadow: "0 6px 16px rgba(99, 102, 241, 0.4)",
+            flexShrink: 0
           }}>
             ERP
           </div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <h2 style={{ fontSize: "1.15rem", fontWeight: "800", color: "var(--text-main)", letterSpacing: "-0.02em", margin: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <h2 style={{ fontSize: "1.05rem", fontWeight: "800", color: "var(--text-main)", letterSpacing: "-0.02em", margin: 0 }}>
                 DISTRIBUTOR ERP
               </h2>
               <span style={{
                 background: user.badgeBg,
                 color: user.badgeColor,
-                padding: "3px 10px",
-                borderRadius: "20px",
-                fontSize: "0.75rem",
+                padding: "2px 8px",
+                borderRadius: "16px",
+                fontSize: "0.72rem",
                 fontWeight: "700",
                 border: `1px solid ${user.badgeColor}40`
               }}>
                 {user.roleLabel}
               </span>
             </div>
-            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "2px 0 0 0" }}>
+            <p className="desktop-only-badge" style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "2px 0 0 0" }}>
               {user.company} • Brands: Nestlé, Patanjali, GSK
             </p>
           </div>
@@ -189,13 +174,15 @@ export default function RoleShellPreview({ user, onLogout, token }) {
       <nav style={{
         background: "var(--bg-card)",
         borderBottom: "1px solid var(--border-card)",
-        padding: "8px 24px",
+        padding: "8px 16px",
         display: "flex",
         alignItems: "center",
         gap: "6px",
         overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "none",
         position: "sticky",
-        top: "65px",
+        top: "60px",
         zIndex: 90,
         boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
         whiteSpace: "nowrap"
@@ -315,44 +302,6 @@ export default function RoleShellPreview({ user, onLogout, token }) {
           <span>Collections & Recon</span>
         </button>
         <button
-          onClick={() => { setViewMode("inventory"); setSelectedInventory(null); setInventorySubTab("overview"); }}
-          style={{
-            background: viewMode === "inventory" ? "var(--badge-brand-bg)" : "transparent",
-            color: viewMode === "inventory" ? "var(--primary-400)" : "var(--text-muted)",
-            border: "none",
-            padding: "6px 14px",
-            borderRadius: "8px",
-            fontSize: "0.82rem",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px"
-          }}
-        >
-          <Boxes size={14} />
-          <span>Inventory & Stock</span>
-        </button>
-        <button
-          onClick={() => { setViewMode("delivery"); setSelectedTrip(null); setDeliverySubTab("dashboard"); }}
-          style={{
-            background: viewMode === "delivery" ? "var(--badge-brand-bg)" : "transparent",
-            color: viewMode === "delivery" ? "var(--primary-400)" : "var(--text-muted)",
-            border: "none",
-            padding: "6px 14px",
-            borderRadius: "8px",
-            fontSize: "0.82rem",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px"
-          }}
-        >
-          <Truck size={14} />
-          <span>Delivery & Trips</span>
-        </button>
-        <button
           onClick={() => { setViewMode("exceptions"); setSelectedException(null); }}
           style={{
             background: viewMode === "exceptions" ? "rgba(239, 68, 68, 0.15)" : "transparent",
@@ -431,7 +380,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
       )}
 
       {/* Content Area */}
-      <div style={{ flex: 1, padding: "36px", maxWidth: "1340px", width: "100%", margin: "0 auto" }}>
+      <div className="dashboard-main-content">
         
         {viewMode === "customers" ? (
           selectedCustomer ? (
@@ -543,138 +492,6 @@ export default function RoleShellPreview({ user, onLogout, token }) {
               onSelectPayment={(p) => setSelectedPayment(p)}
             />
           )
-        ) : viewMode === "inventory" ? (
-          selectedInventory ? (
-            <InventoryDetails
-              inventoryId={selectedInventory.id || selectedInventory._id}
-              initialInventory={selectedInventory}
-              token={token}
-              user={user}
-              onBack={() => setSelectedInventory(null)}
-              onInventoryUpdated={(up) => {
-                setSelectedInventory(up);
-                showToast("Stock level updated successfully");
-              }}
-            />
-          ) : inventorySubTab === "stock" ? (
-            <div>
-              <div style={{ marginBottom: "16px", display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setInventorySubTab("overview")}
-                  className="btn-secondary"
-                  style={{ padding: "6px 14px", fontSize: "0.8rem", cursor: "pointer" }}
-                >
-                  ← Back to Inventory Overview
-                </button>
-              </div>
-              <InventoryList
-                token={token}
-                user={user}
-                onSelectInventory={(item) => setSelectedInventory(item)}
-              />
-            </div>
-          ) : inventorySubTab === "movements" ? (
-            <div>
-              <div style={{ marginBottom: "16px", display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setInventorySubTab("overview")}
-                  className="btn-secondary"
-                  style={{ padding: "6px 14px", fontSize: "0.8rem", cursor: "pointer" }}
-                >
-                  ← Back to Inventory Overview
-                </button>
-              </div>
-              <StockMovementHistory
-                token={token}
-                user={user}
-              />
-            </div>
-          ) : (
-            <InventoryDashboard
-              token={token}
-              user={user}
-              onSelectProduct={(p) => setSelectedInventory(p)}
-              onViewAllStock={() => setInventorySubTab("stock")}
-              onViewMovements={() => setInventorySubTab("movements")}
-            />
-          )
-        ) : viewMode === "delivery" ? (
-          selectedTrip ? (
-            <DeliveryTripDetails
-              tripId={selectedTrip.id || selectedTrip._id}
-              initialTrip={selectedTrip}
-              token={token}
-              user={user}
-              onBack={() => setSelectedTrip(null)}
-              onTripUpdated={(up) => {
-                setSelectedTrip(up);
-                showToast("Delivery trip updated");
-              }}
-            />
-          ) : deliverySubTab === "ready" ? (
-            <div>
-              <div style={{ marginBottom: "16px", display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setDeliverySubTab("dashboard")}
-                  className="btn-secondary"
-                  style={{ padding: "6px 14px", fontSize: "0.8rem", cursor: "pointer" }}
-                >
-                  ← Back to Delivery Dashboard
-                </button>
-              </div>
-              <ReadyForDispatch
-                token={token}
-                user={user}
-                onCreateTripSuccess={() => {
-                  setDeliverySubTab("trips");
-                  showToast("Delivery trip dispatched successfully");
-                }}
-              />
-            </div>
-          ) : deliverySubTab === "trips" ? (
-            <div>
-              <div style={{ marginBottom: "16px", display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setDeliverySubTab("dashboard")}
-                  className="btn-secondary"
-                  style={{ padding: "6px 14px", fontSize: "0.8rem", cursor: "pointer" }}
-                >
-                  ← Back to Delivery Dashboard
-                </button>
-              </div>
-              <DeliveryTripList
-                token={token}
-                user={user}
-                onSelectTrip={(t) => setSelectedTrip(t)}
-                onCreateTripClick={() => setDeliverySubTab("ready")}
-              />
-            </div>
-          ) : deliverySubTab === "fleet" ? (
-            <div>
-              <div style={{ marginBottom: "16px", display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setDeliverySubTab("dashboard")}
-                  className="btn-secondary"
-                  style={{ padding: "6px 14px", fontSize: "0.8rem", cursor: "pointer" }}
-                >
-                  ← Back to Delivery Dashboard
-                </button>
-              </div>
-              <VehicleList
-                token={token}
-                user={user}
-              />
-            </div>
-          ) : (
-            <DeliveryDashboard
-              token={token}
-              user={user}
-              onSelectTrip={(t) => setSelectedTrip(t)}
-              onViewReadyDispatch={() => setDeliverySubTab("ready")}
-              onViewAllTrips={() => setDeliverySubTab("trips")}
-              onViewFleet={() => setDeliverySubTab("fleet")}
-            />
-          )
         ) : viewMode === "exceptions" ? (
           selectedException ? (
             <ExceptionDetails
@@ -722,103 +539,8 @@ export default function RoleShellPreview({ user, onLogout, token }) {
           />
         ) : isSalesman ? (
           <SalesmanBeatDashboard user={user} token={token} onNavigate={(mode) => setViewMode(mode)} onLogout={onLogout} />
-        ) : isSalesMgr ? (
-          <SalesManagerPanel user={user} token={token} onLogout={onLogout} />
         ) : (
-          <>
-            {/* Welcome Banner */}
-            <div className="glass-card" style={{
-              padding: "28px 36px",
-              marginBottom: "32px",
-              position: "relative",
-              overflow: "hidden",
-              background: `linear-gradient(135deg, var(--bg-card) 0%, ${user.badgeColor}15 100%)`,
-              border: `1px solid ${user.badgeColor}30`
-            }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px" }}>
-                <div>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    color: user.badgeColor,
-                    fontSize: "0.85rem",
-                    fontWeight: "700",
-                    marginBottom: "8px"
-                  }}>
-                    <Sparkles size={16} />
-                    AUTHENTICATED DEMO SESSION
-                  </div>
-                  <h1 style={{ fontSize: "2rem", fontWeight: "800", color: "var(--text-main)", marginBottom: "8px" }}>
-                    Welcome back, {user.name}!
-                  </h1>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", maxWidth: "700px", lineHeight: "1.6" }}>
-                    {user.description}
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                  <div style={{
-                    background: "var(--bg-input)",
-                    border: "1px solid var(--border-card)",
-                    borderRadius: "16px",
-                    padding: "16px 24px",
-                    textAlign: "right"
-                  }}>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-dim)", fontWeight: "600", textTransform: "uppercase" }}>
-                      Active Outlet Network
-                    </div>
-                    <div style={{ fontSize: "1.8rem", fontWeight: "900", color: "var(--text-main)" }}>
-                      4,000+ Outlets
-                    </div>
-                    <div style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: "600", marginTop: "2px" }}>
-                      ● 20 Salesmen & 11 Vehicles Active
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={onLogout}
-                    className="btn-logout"
-                    style={{ padding: "8px 18px" }}
-                    title="Logout from Finance session"
-                  >
-                    <LogOut size={16} />
-                    <span>Logout Session</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Role Features & Quick Access to Masters */}
-            <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
-              <button 
-                onClick={() => setViewMode("customers")} 
-                className="btn-primary" 
-                style={{ padding: "14px 24px", display: "inline-flex", alignItems: "center", gap: "10px" }}
-              >
-                <Store size={20} />
-                <span>Open Customer / Outlet Master</span>
-              </button>
-
-              <button 
-                onClick={() => setViewMode("products")} 
-                className="btn-primary" 
-                style={{ padding: "14px 24px", display: "inline-flex", alignItems: "center", gap: "10px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}
-              >
-                <Package size={20} />
-                <span>Open Product Master</span>
-              </button>
-
-              <button 
-                onClick={() => { setViewMode("inventory"); setSelectedInventory(null); setInventorySubTab("overview"); }} 
-                className="btn-primary" 
-                style={{ padding: "14px 24px", display: "inline-flex", alignItems: "center", gap: "10px", background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)" }}
-              >
-                <Boxes size={20} />
-                <span>Open Inventory & Stock</span>
-              </button>
-            </div>
-          </>
+          <SalesManagerPanel user={user} token={token} onLogout={onLogout} />
         )}
 
       </div>

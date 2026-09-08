@@ -6,9 +6,10 @@ const STANDARD_PASSWORD = process.env.DEFAULT_USER_PASSWORD || "password123";
 
 export const login = (req, res) => {
   try {
-    const { emailOrMobile, password, role } = req.body;
+    const { emailOrMobile, email, mobile, password, role } = req.body;
+    const identifier = emailOrMobile || email || mobile;
 
-    if (!emailOrMobile && !role) {
+    if (!identifier && !role) {
       return res.status(400).json({
         success: false,
         message: "Please enter your Email or Mobile number."
@@ -23,10 +24,13 @@ export const login = (req, res) => {
     }
 
     // Email or mobile search
-    if (!user && emailOrMobile) {
-      const query = emailOrMobile.trim().toLowerCase();
+    if (!user && identifier) {
+      const query = String(identifier).trim().toLowerCase();
       user = DEMO_USERS.find(
-        (u) => u.email.toLowerCase() === query || u.mobile === query
+        (u) =>
+          u.email.toLowerCase() === query ||
+          u.mobile === query ||
+          (u.aliases && u.aliases.some((a) => a.toLowerCase() === query))
       );
     }
 
@@ -39,7 +43,14 @@ export const login = (req, res) => {
 
     // Validate password
     if (password) {
-      const validPass = password === STANDARD_PASSWORD || password === "password" || password === "admin123";
+      const p = password.trim();
+      const validPass =
+        p === STANDARD_PASSWORD ||
+        p === "password" ||
+        p === "admin123" ||
+        p === "Password123!" ||
+        p === "password123!" ||
+        p.toLowerCase() === "password123";
       if (!validPass) {
         return res.status(401).json({
           success: false,

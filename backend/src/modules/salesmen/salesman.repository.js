@@ -104,7 +104,7 @@ export const findSalesmanByEmployeeCode = async (employeeCode) => {
 };
 
 export const createSalesmanRecord = async (salesmanData) => {
-  const newId = `sm-${Date.now()}`;
+  const newId = salesmanData.id || `sm-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const code = generateSalesmanCode();
   const now = new Date().toISOString();
 
@@ -183,7 +183,7 @@ export const assignRouteRecord = async ({ salesmanId, routeId, areaId, assignedB
   if (existingActive) return existingActive;
 
   const newAssignment = {
-    id: `sra-${Date.now()}`,
+    id: `sra-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     salesmanId,
     routeId,
     areaId,

@@ -127,7 +127,7 @@ export const findCustomerOrders = async (customerId, scopedSalesmanId = null) =>
 };
 
 export const createOrderRecord = async (orderData) => {
-  const newId = `ord-${Date.now()}`;
+  const newId = `ord-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const orderNumber = generateOrderNumber();
   const now = new Date().toISOString();
 

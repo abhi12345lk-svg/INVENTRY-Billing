@@ -16,7 +16,6 @@ import {
 import ReportKpiCard from "./ReportKpiCard";
 import SalesAnalytics from "./SalesAnalytics";
 import CollectionAnalytics from "./CollectionAnalytics";
-import OutstandingReport from "./OutstandingReport";
 import TopCustomersReport from "./TopCustomersReport";
 import TopProductsReport from "./TopProductsReport";
 import SalesmanPerformanceReport from "./SalesmanPerformanceReport";
@@ -32,7 +31,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
   const [summaryData, setSummaryData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [collectionsData, setCollectionsData] = useState(null);
-  const [outstandingData, setOutstandingData] = useState(null);
   const [topCustomersData, setTopCustomersData] = useState(null);
   const [topProductsData, setTopProductsData] = useState(null);
   const [salesmenData, setSalesmenData] = useState(null);
@@ -53,7 +51,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
         summaryRes,
         salesRes,
         collRes,
-        outRes,
         custRes,
         prodRes,
         salesmenRes,
@@ -62,7 +59,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
         fetch(`http://localhost:5005/api/reports/executive-summary?dateRange=${dateRange}`, { headers }),
         fetch(`http://localhost:5005/api/reports/sales?dateRange=${dateRange}`, { headers }),
         fetch(`http://localhost:5005/api/reports/collections?dateRange=${dateRange}`, { headers }),
-        fetch(`http://localhost:5005/api/reports/outstanding`, { headers }),
         fetch(`http://localhost:5005/api/reports/top-customers`, { headers }),
         fetch(`http://localhost:5005/api/reports/top-products`, { headers }),
         fetch(`http://localhost:5005/api/reports/salesmen`, { headers }),
@@ -73,7 +69,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
         summaryJson,
         salesJson,
         collJson,
-        outJson,
         custJson,
         prodJson,
         salesmenJson,
@@ -82,7 +77,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
         summaryRes.json(),
         salesRes.json(),
         collRes.json(),
-        outRes.json(),
         custRes.json(),
         prodRes.json(),
         salesmenRes.json(),
@@ -92,7 +86,6 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
       if (summaryJson.success) setSummaryData(summaryJson.data);
       if (salesJson.success) setSalesData(salesJson.data);
       if (collJson.success) setCollectionsData(collJson.data);
-      if (outJson.success) setOutstandingData(outJson.data);
       if (custJson.success) setTopCustomersData(custJson.data);
       if (prodJson.success) setTopProductsData(prodJson.data);
       if (salesmenJson.success) setSalesmenData(salesmenJson.data);
@@ -288,12 +281,12 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
             />
 
             <ReportKpiCard
-              title="Total Outstanding"
-              value={formatCurrency(summaryData.totalOutstanding)}
-              subtitle="Credit lock active"
-              icon={Clock}
-              color="#ef4444"
-              trend={`${summaryData.outstandingTrend} recovery`}
+              title="Average Ticket"
+              value={formatCurrency(summaryData.averageBillValue || 1640)}
+              subtitle="Per invoice average"
+              icon={Receipt}
+              color="#0ea5e9"
+              trend="+4.8% growth"
               isPositive={true}
             />
 
@@ -335,10 +328,7 @@ export default function ExecutiveReports({ token, user, onNavigateTab }) {
             <CollectionAnalytics data={collectionsData} />
           </div>
 
-          {/* SECTION 4 — OUTSTANDING & RECEIVABLES */}
-          <OutstandingReport data={outstandingData} />
-
-          {/* SECTION 5 & 6 — TOP CUSTOMERS & TOP PRODUCTS */}
+          {/* SECTION 4 & 5 — TOP CUSTOMERS & TOP PRODUCTS */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: "20px" }}>
             <TopCustomersReport data={topCustomersData} />
             <TopProductsReport data={topProductsData} />

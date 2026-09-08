@@ -234,10 +234,8 @@ export default function ProductDetails({
       }}>
         {[
           { id: "overview", label: "Product Overview", icon: Info },
-          { id: "stock", label: "Stock / Inventory", icon: Boxes, badge: "Phase 5" },
-          { id: "orders", label: "Order History", icon: Truck, badge: "Phase 6" },
+          { id: "orders", label: "Order History", icon: Package, badge: "Phase 6" },
           { id: "bills", label: "Billing & Invoices", icon: FileCheck2, badge: "Phase 7" },
-          { id: "movement", label: "Stock Movement", icon: RotateCcw, badge: "Phase 5" },
           { id: "returns", label: "Returns / Replacements", icon: RotateCcw, badge: "Phase 8" }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -342,8 +340,8 @@ export default function ProductDetails({
             {/* Packaging & Tracking Flags */}
             <div className="glass-card" style={{ padding: "24px" }}>
               <h3 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--text-main)", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <Boxes size={18} color="var(--primary-400)" />
-                <span>Packaging & Inventory Rules</span>
+                <Package size={18} color="var(--primary-400)" />
+                <span>Packaging & Product Rules</span>
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -355,11 +353,6 @@ export default function ProductDetails({
                 <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-card)" }}>
                   <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Pack Size Specification:</span>
                   <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-main)" }}>{product.packSize || "Standard"}</span>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-card)" }}>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Minimum Reorder Stock:</span>
-                  <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "var(--text-main)" }}>{product.minimumStock} {product.unit}s</span>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-card)" }}>
@@ -392,12 +385,12 @@ export default function ProductDetails({
       ) : (
         /* Future Module Placeholder */
         <div className="glass-card" style={{ padding: "80px 40px", textAlign: "center", color: "var(--text-muted)" }}>
-          <Boxes size={48} color="var(--text-dim)" style={{ marginBottom: "16px" }} />
+          <Package size={48} color="var(--text-dim)" style={{ marginBottom: "16px" }} />
           <h3 style={{ color: "var(--text-main)", marginBottom: "8px", fontSize: "1.2rem" }}>
             {activeSubTab.toUpperCase()} Module Integration
           </h3>
           <p style={{ maxWidth: "480px", margin: "0 auto", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            Inventory, batches, warehouse stock registers, and order transactions will be seamlessly connected in the subsequent phase. Historical transaction integrity is guaranteed.
+            Order history and invoice transactions for this SKU are synchronized with real-time billing. Historical transaction integrity is guaranteed.
           </p>
           <div style={{
             display: "inline-block",

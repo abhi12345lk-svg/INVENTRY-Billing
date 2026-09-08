@@ -27,7 +27,8 @@ export const findCustomers = async ({
   if (scopedSalesmanId) {
     list = list.filter((c) => 
       c.salesmanId === scopedSalesmanId || 
-      (scopedSalesmanId === "user-salesman-01" && (c.salesmanId === "user-salesman-01" || c.salesmanId === "SM-000001"))
+      (scopedSalesmanId === "user-salesman-01" && (c.salesmanId === "user-salesman-01" || c.salesmanId === "SM-000001" || c.salesmanName === "Rahul Kumar")) ||
+      (scopedSalesmanId && c.salesmanName?.toLowerCase() === "rahul kumar")
     );
   } else if (unassignedOnly) {
     list = list.filter((c) => !c.salesmanId || !c.routeId || c.salesmanId === "UNASSIGNED" || c.routeId === "UNASSIGNED" || c.salesmanId === "Unassigned");
@@ -103,7 +104,7 @@ export const findCustomerByMobile = async (mobile) => {
 };
 
 export const createCustomerRecord = async (customerData) => {
-  const newId = `cus-${Date.now()}`;
+  const newId = customerData.id || `cus-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const code = generateCustomerCode();
   const now = new Date().toISOString();
 

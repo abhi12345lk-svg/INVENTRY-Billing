@@ -3,7 +3,8 @@ import { findBillById } from "../billing/billing.repository.js";
 const round2 = (num) => Math.round((Number(num || 0) + Number.EPSILON) * 100) / 100;
 
 export const validatePaymentEntry = (data, user) => {
-  const { paymentMode, amount, customerId, chequeNumber, chequeBank } = data;
+  const paymentMode = (data.paymentMode || data.mode || "").toUpperCase();
+  const { amount, customerId, chequeNumber, chequeBank } = data;
 
   if (!paymentMode || !["CASH", "UPI", "CHEQUE"].includes(paymentMode)) {
     return {

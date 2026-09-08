@@ -16,6 +16,7 @@ import inventoryRoutes from "./modules/inventory/inventory.routes.js";
 import { deliveryRouter, vehicleRouter } from "./modules/delivery/delivery.routes.js";
 import { exceptionRouter, approvalRouter } from "./modules/exceptions/exception.routes.js";
 import reportRoutes from "./modules/reports/report.routes.js";
+import schemeRoutes from "./modules/schemes/scheme.routes.js";
 import { connectDB } from "./config/database.js";
 import { seedDemoData } from "./config/demo.seed.js";
 
@@ -42,6 +43,7 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/bills", billingRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/schemes", schemeRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/delivery", deliveryRouter);
 app.use("/api/vehicles", vehicleRouter);

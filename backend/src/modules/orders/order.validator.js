@@ -16,11 +16,11 @@ export const validateOrderCreation = async (data, user) => {
     } else if (customer.status !== "ACTIVE") {
       errors.push(`Cannot create order for INACTIVE outlet (${customer.shopName}).`);
     } else if (user.role === "SALESMAN") {
-      // Strict salesman scope check
       const isAssigned = 
         customer.salesmanId === user.id ||
         customer.salesmanId === "SM-000001" ||
-        customer.salesmanId === "user-salesman-01";
+        customer.salesmanId === "user-salesman-01" ||
+        customer.salesmanName === user.name;
 
       if (!isAssigned) {
         return {

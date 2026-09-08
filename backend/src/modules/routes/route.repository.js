@@ -77,7 +77,7 @@ export const findRouteByName = async (name) => {
 };
 
 export const createRouteRecord = async (routeData) => {
-  const newId = `route-${Date.now()}`;
+  const newId = routeData.id || `route-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const code = generateRouteCode();
   const now = new Date().toISOString();
 

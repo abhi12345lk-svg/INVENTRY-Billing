@@ -10,7 +10,8 @@ import {
   Store,
   ShieldCheck,
   ShoppingCart,
-  LogOut
+  LogOut,
+  Tag
 } from "lucide-react";
 
 import AreaList from "../areas/AreaList";
@@ -26,6 +27,7 @@ import AssignmentHistoryModal from "../assignments/AssignmentHistoryModal";
 import OrderList from "../orders/OrderList";
 import OrderDetails from "../orders/OrderDetails";
 import CreateOrder from "../orders/CreateOrder";
+import SchemeList from "../schemes/SchemeList";
 
 export default function SalesManagerPanel({ user, token, onLogout }) {
   const [activeTab, setActiveTab] = useState("assignments"); // 'assignments' | 'salesmen' | 'routes' | 'areas'
@@ -115,7 +117,10 @@ export default function SalesManagerPanel({ user, token, onLogout }) {
           borderRadius: "12px",
           border: "1px solid var(--border-color)",
           gap: "4px",
-          flexWrap: "wrap"
+          overflowX: "auto",
+          maxWidth: "100%",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none"
         }}>
           <button
             onClick={() => setActiveTab("assignments")}
@@ -223,6 +228,30 @@ export default function SalesManagerPanel({ user, token, onLogout }) {
           >
             <ShoppingCart size={15} />
             <span>Sales Orders</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("schemes");
+              setSelectedOrder(null);
+            }}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "8px",
+              border: "none",
+              fontSize: "0.85rem",
+              fontWeight: "700",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              background: activeTab === "schemes" ? "var(--primary-600)" : "transparent",
+              color: activeTab === "schemes" ? "#ffffff" : "var(--text-muted)",
+              transition: "all 0.15s ease"
+            }}
+          >
+            <Tag size={15} />
+            <span>Trade Schemes</span>
           </button>
         </div>
 
@@ -400,6 +429,10 @@ export default function SalesManagerPanel({ user, token, onLogout }) {
             onOpenCreate={() => setShowCreateOrderModal(true)}
           />
         )
+      )}
+
+      {activeTab === "schemes" && (
+        <SchemeList token={token} userRole={user.role} />
       )}
 
       {/* Modals */}

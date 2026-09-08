@@ -99,11 +99,9 @@ export default function ExceptionList({ token, onSelectException, initialSeverit
             }}
           >
             <option value="ALL">All Modules</option>
-            <option value="PAYMENTS">Payments</option>
-            <option value="INVENTORY">Inventory</option>
-            <option value="DELIVERY">Delivery</option>
-            <option value="RECEIVABLES">Receivables</option>
             <option value="BILLING">Billing</option>
+            <option value="PAYMENTS">Payments</option>
+            <option value="ORDERS">Orders</option>
           </select>
 
           {/* Status Select */}

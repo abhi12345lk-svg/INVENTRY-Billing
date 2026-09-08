@@ -164,13 +164,18 @@ export const createPaymentRecord = async (paymentData) => {
     return { ...saved.toObject(), id: saved._id.toString() };
   }
 
+  const paymentNumber = paymentData.paymentNumber || (await generatePaymentNumber());
   const newPayment = {
-    id: `pay-${Date.now()}`,
+    id: `pay-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     ...paymentData,
-    mappedAmount: 0,
-    unmappedAmount: round2(paymentData.amount),
-    billMappings: [],
-    createdAt: new Date().toISOString(),
+    paymentNumber,
+    mappedAmount: paymentData.mappedAmount || 0,
+    unmappedAmount:
+      paymentData.unmappedAmount !== undefined
+        ? paymentData.unmappedAmount
+        : round2(paymentData.amount),
+    billMappings: paymentData.billMappings || [],
+    createdAt: paymentData.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
 

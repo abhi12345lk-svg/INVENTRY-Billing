@@ -200,9 +200,7 @@ export default function CustomerDetails({ customer, token, onBack, onOpenEditMod
           { id: "orders", label: "Orders", icon: ShoppingBag },
           { id: "bills", label: "Bills & Invoices", icon: FileText, placeholder: true },
           { id: "payments", label: "Payments", icon: Coins, placeholder: true },
-          { id: "ledger", label: "Customer Ledger", icon: Layers, placeholder: true },
-          { id: "outstanding", label: "Outstanding", icon: CreditCard, placeholder: true },
-          { id: "ageing", label: "Receivable Ageing", icon: Clock, placeholder: true }
+          { id: "ledger", label: "Customer Ledger", icon: Layers, placeholder: true }
         ].map((tab) => {
           const IconComp = tab.icon;
           const isActive = activeTab === tab.id;

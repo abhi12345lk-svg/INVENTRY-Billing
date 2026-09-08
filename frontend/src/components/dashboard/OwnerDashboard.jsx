@@ -4,7 +4,6 @@ import Header from "./Header";
 import KpiGrid from "./KpiGrid";
 import SalesChart from "./SalesChart";
 import CollectionSummary from "./CollectionSummary";
-import ReceivableAgeing from "./ReceivableAgeing";
 import ExceptionPanel from "./ExceptionPanel";
 import RecentActivity from "./RecentActivity";
 import CustomerList from "../customers/CustomerList";
@@ -35,20 +34,13 @@ import BillDetails from "../billing/BillDetails";
 import PaymentList from "../payments/PaymentList";
 import PaymentDetails from "../payments/PaymentDetails";
 import UnmatchedQueue from "../payments/UnmatchedQueue";
-import InventoryDashboard from "../inventory/InventoryDashboard";
-import InventoryList from "../inventory/InventoryList";
-import InventoryDetails from "../inventory/InventoryDetails";
-import StockMovementHistory from "../inventory/StockMovementHistory";
-import DeliveryDashboard from "../delivery/DeliveryDashboard";
-import ReadyForDispatch from "../delivery/ReadyForDispatch";
-import DeliveryTripList from "../delivery/DeliveryTripList";
-import DeliveryTripDetails from "../delivery/DeliveryTripDetails";
-import VehicleList from "../delivery/VehicleList";
 import ExceptionDashboard from "../exceptions/ExceptionDashboard";
 import ExceptionDetails from "../exceptions/ExceptionDetails";
 import ApprovalDashboard from "../approvals/ApprovalDashboard";
 import ApprovalDetails from "../approvals/ApprovalDetails";
 import ExecutiveReports from "../reports/ExecutiveReports";
+import SchemeList from "../schemes/SchemeList";
+import DemoGuide from "../demo/DemoGuide";
 import { AlertCircle, RefreshCw, Layers, Sparkles } from "lucide-react";
 
 export default function OwnerDashboard({ user, onLogout, token }) {
@@ -57,6 +49,7 @@ export default function OwnerDashboard({ user, onLogout, token }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Modals & Customer details state
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -96,12 +89,6 @@ export default function OwnerDashboard({ user, onLogout, token }) {
 
   // Step 8: Payments & Reconciliation state
   const [selectedPayment, setSelectedPayment] = useState(null);
-
-  // Step 9: Inventory & Stock state
-  const [selectedInventory, setSelectedInventory] = useState(null);
-
-  // Step 10: Delivery & Dispatch state
-  const [selectedTrip, setSelectedTrip] = useState(null);
 
   // Step 11: Exception & Approval state
   const [selectedException, setSelectedException] = useState(null);
@@ -157,14 +144,14 @@ export default function OwnerDashboard({ user, onLogout, token }) {
           setSelectedOrder(null);
           setSelectedBill(null);
           setSelectedPayment(null);
-          setSelectedInventory(null);
-          setSelectedTrip(null);
           setSelectedException(null);
           setSelectedApproval(null);
         }} 
         exceptionCount={dashboardData?.exceptions?.length || 10}
         approvalCount={4}
         onLogout={onLogout}
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -176,6 +163,7 @@ export default function OwnerDashboard({ user, onLogout, token }) {
           onLogout={onLogout} 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          onToggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
         {/* Toast Feedback Banner */}
@@ -198,7 +186,7 @@ export default function OwnerDashboard({ user, onLogout, token }) {
         )}
 
         {/* Dashboard Body */}
-        <main style={{ flex: 1, padding: "32px", maxWidth: "1400px", width: "100%", margin: "0 auto" }}>
+        <main className="dashboard-main-content">
           
           {/* CUSTOMER MASTER VIEW */}
           {activeTab === "sales-customers" ? (
@@ -457,126 +445,6 @@ export default function OwnerDashboard({ user, onLogout, token }) {
               user={user}
               onSelectPayment={(p) => setSelectedPayment(p)}
             />
-          ) : activeTab === "inventory-overview" ? (
-            /* STEP 9: INVENTORY DASHBOARD */
-            selectedInventory ? (
-              <InventoryDetails
-                inventoryId={selectedInventory.id || selectedInventory._id}
-                initialInventory={selectedInventory}
-                token={token}
-                user={user}
-                onBack={() => setSelectedInventory(null)}
-                onInventoryUpdated={(up) => setSelectedInventory(up)}
-              />
-            ) : (
-              <InventoryDashboard
-                token={token}
-                user={user}
-                onSelectProduct={(p) => setSelectedInventory(p)}
-                onViewAllStock={() => setActiveTab("inventory-stock")}
-                onViewMovements={() => setActiveTab("inventory-movements")}
-              />
-            )
-          ) : activeTab === "inventory-stock" || activeTab === "inv-stock" ? (
-            /* STEP 9: INVENTORY STOCK MASTER */
-            selectedInventory ? (
-              <InventoryDetails
-                inventoryId={selectedInventory.id || selectedInventory._id}
-                initialInventory={selectedInventory}
-                token={token}
-                user={user}
-                onBack={() => setSelectedInventory(null)}
-                onInventoryUpdated={(up) => setSelectedInventory(up)}
-              />
-            ) : (
-              <InventoryList
-                token={token}
-                user={user}
-                onSelectInventory={(p) => setSelectedInventory(p)}
-              />
-            )
-          ) : activeTab === "inventory-alerts" ? (
-            /* STEP 9: LOW STOCK ALERTS */
-            selectedInventory ? (
-              <InventoryDetails
-                inventoryId={selectedInventory.id || selectedInventory._id}
-                initialInventory={selectedInventory}
-                token={token}
-                user={user}
-                onBack={() => setSelectedInventory(null)}
-                onInventoryUpdated={(up) => setSelectedInventory(up)}
-              />
-            ) : (
-              <InventoryList
-                token={token}
-                user={user}
-                initialStatusFilter="LOW_STOCK"
-                onSelectInventory={(p) => setSelectedInventory(p)}
-              />
-            )
-          ) : activeTab === "inventory-movements" ? (
-            /* STEP 9: STOCK MOVEMENTS LEDGER */
-            <StockMovementHistory
-              token={token}
-              user={user}
-              title="Distributor Stock Movement Audit Ledger"
-            />
-          ) : activeTab === "delivery-dashboard" || activeTab === "delivery" ? (
-            /* STEP 10: DELIVERY DASHBOARD */
-            selectedTrip ? (
-              <DeliveryTripDetails
-                tripId={selectedTrip.id || selectedTrip._id}
-                initialTrip={selectedTrip}
-                token={token}
-                user={user}
-                onBack={() => setSelectedTrip(null)}
-                onTripUpdated={(updated) => setSelectedTrip(updated)}
-              />
-            ) : (
-              <DeliveryDashboard
-                token={token}
-                user={user}
-                onSelectTrip={(t) => setSelectedTrip(t)}
-                onViewReadyDispatch={() => setActiveTab("delivery-ready")}
-                onViewAllTrips={() => setActiveTab("delivery-trips")}
-                onViewFleet={() => setActiveTab("delivery-vehicles")}
-              />
-            )
-          ) : activeTab === "delivery-ready" ? (
-            /* STEP 10: READY FOR DISPATCH INVOICE STAGING */
-            <ReadyForDispatch
-              token={token}
-              user={user}
-              onCreateTripSuccess={() => {
-                setActiveTab("delivery-trips");
-                showToast("Delivery trip dispatched successfully");
-              }}
-            />
-          ) : activeTab === "delivery-trips" ? (
-            /* STEP 10: DELIVERY TRIPS MASTER */
-            selectedTrip ? (
-              <DeliveryTripDetails
-                tripId={selectedTrip.id || selectedTrip._id}
-                initialTrip={selectedTrip}
-                token={token}
-                user={user}
-                onBack={() => setSelectedTrip(null)}
-                onTripUpdated={(updated) => setSelectedTrip(updated)}
-              />
-            ) : (
-              <DeliveryTripList
-                token={token}
-                user={user}
-                onSelectTrip={(t) => setSelectedTrip(t)}
-                onCreateTripClick={() => setActiveTab("delivery-ready")}
-              />
-            )
-          ) : activeTab === "delivery-vehicles" ? (
-            /* STEP 10: VEHICLE FLEET MASTER */
-            <VehicleList
-              token={token}
-              user={user}
-            />
           ) : activeTab === "exceptions" ? (
             /* STEP 11: OWNER EXCEPTION CONTROL CENTER */
             selectedException ? (
@@ -618,6 +486,17 @@ export default function OwnerDashboard({ user, onLogout, token }) {
               token={token}
               user={user}
               onNavigateTab={(tab) => setActiveTab(tab)}
+            />
+          ) : activeTab === "sales-schemes" ? (
+            /* STEP 13: FMCG SCHEMES & TRADE PROMOTIONS MASTER */
+            <SchemeList token={token} userRole={user.role} />
+          ) : activeTab === "demo-guide" ? (
+            /* STEP 14: INTERACTIVE FMCG DEMO GUIDE */
+            <DemoGuide
+              onNavigateTab={(tab) => {
+                setActiveTab(tab);
+              }}
+              onClose={() => setActiveTab("overview")}
             />
           ) : (
             /* OVERVIEW / DASHBOARD VIEW */
@@ -673,12 +552,14 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                   
                   {/* Top Welcome & Network Overview Banner */}
                   <div className="glass-card" style={{
-                    padding: "24px 32px",
+                    padding: "20px 24px",
                     background: "linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.1) 100%)",
                     border: "1px solid rgba(99, 102, 241, 0.25)",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between"
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "16px"
                   }}>
                     <div>
                       <div style={{
@@ -752,8 +633,8 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                         padding: "12px 20px",
                         textAlign: "center"
                       }}>
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-dim)", textTransform: "uppercase", fontWeight: "700" }}>Vehicles</div>
-                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "#10b981" }}>{dashboardData.network.deliveryVehicles}</div>
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-dim)", textTransform: "uppercase", fontWeight: "700" }}>Beats / Routes</div>
+                        <div style={{ fontSize: "1.3rem", fontWeight: "800", color: "#10b981" }}>{dashboardData.network.activeRoutes || 24}</div>
                       </div>
                     </div>
                   </div>
@@ -773,22 +654,13 @@ export default function OwnerDashboard({ user, onLogout, token }) {
                   />
 
                   {/* Sales Chart & Collection Breakdown Grid */}
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "1.4fr 1fr",
-                    gap: "24px"
-                  }}>
+                  <div className="responsive-split-grid">
                     <SalesChart salesData={dashboardData.sales} />
                     <CollectionSummary collections={dashboardData.collections} />
                   </div>
 
-                  {/* Receivable Ageing & Recent Activity Feed Grid */}
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "1.3fr 1fr",
-                    gap: "24px"
-                  }}>
-                    <ReceivableAgeing receivables={dashboardData.receivables} />
+                  {/* Recent Activity Feed */}
+                  <div>
                     <RecentActivity activityList={dashboardData.recentActivity} />
                   </div>
 

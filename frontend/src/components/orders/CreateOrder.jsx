@@ -28,13 +28,13 @@ export default function CreateOrder({
   const [selectedCustomer, setSelectedCustomer] = useState(preselectedCustomer || customer);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [inventoryMap, setInventoryMap] = useState({});
   const [loadingLookups, setLoadingLookups] = useState(true);
 
   // Cart / Items state
   const [orderItems, setOrderItems] = useState([]);
   const [productSearch, setProductSearch] = useState("");
   const [notes, setNotes] = useState("");
+  const [mobileTab, setMobileTab] = useState("catalog");
 
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,21 +48,18 @@ export default function CreateOrder({
     }
   }, [preselectedCustomer, customer]);
 
-  // Load customer choices, active products & real-time inventory stock levels
+  // Load customer choices and active products
   useEffect(() => {
     const fetchLookups = async () => {
       setLoadingLookups(true);
       try {
-        const [prodRes, custRes, invRes] = await Promise.all([
+        const [prodRes, custRes] = await Promise.all([
           fetch("http://localhost:5005/api/products?status=ACTIVE&limit=100", {
             headers: { "Authorization": `Bearer ${token}` }
           }),
           !customer ? fetch("http://localhost:5005/api/customers?limit=100", {
             headers: { "Authorization": `Bearer ${token}` }
-          }) : Promise.resolve(null),
-          fetch("http://localhost:5005/api/inventory?limit=100", {
-            headers: { "Authorization": `Bearer ${token}` }
-          })
+          }) : Promise.resolve(null)
         ]);
 
         const prodJson = await prodRes.json();
@@ -79,18 +76,6 @@ export default function CreateOrder({
             }
           }
         }
-
-        if (invRes) {
-          const invJson = await invRes.json();
-          if (invJson.success && invJson.data) {
-            const map = {};
-            invJson.data.forEach((inv) => {
-              map[inv.productId] = inv;
-              if (inv.productCode) map[inv.productCode] = inv;
-            });
-            setInventoryMap(map);
-          }
-        }
       } catch (err) {
         console.error("Lookups load error:", err);
       } finally {
@@ -103,13 +88,6 @@ export default function CreateOrder({
 
   // Add product to cart
   const handleAddProduct = (prod, quantity = 1) => {
-    const inv = inventoryMap[prod.id] || inventoryMap[prod.productCode];
-    if (inv && (inv.status === "OUT_OF_STOCK" || inv.availableStock <= 0)) {
-      setError(`Cannot add "${prod.productName}": Product is OUT OF STOCK in warehouse.`);
-      setTimeout(() => setError(""), 4000);
-      return;
-    }
-
     setOrderItems((prev) => {
       const existingIdx = prev.findIndex((item) => item.productId === prod.id);
       if (existingIdx !== -1) {
@@ -450,17 +428,32 @@ export default function CreateOrder({
           </div>
         </div>
 
+        {/* Mobile View Switcher Tabs (< 768px) */}
+        <div className="mobile-only-order-tabs">
+          <button 
+            type="button"
+            className={mobileTab === "catalog" ? "active" : ""}
+            onClick={() => setMobileTab("catalog")}
+          >
+            📦 Browse Catalog ({filteredProducts.length})
+          </button>
+          <button 
+            type="button"
+            className={mobileTab === "cart" ? "active" : ""}
+            onClick={() => setMobileTab("cart")}
+          >
+            🛒 Cart ({orderItems.length} items • ₹{Math.round(livePricingSummary.grandTotal).toLocaleString("en-IN")})
+          </button>
+        </div>
+
         {/* Modal Main Body (Split into Catalog + Cart) */}
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1.1fr 1fr", overflow: "hidden" }}>
+        <div className="order-split-desktop">
           
           {/* Left Column: Product Selection Catalog */}
-          <div style={{
-            padding: "20px",
+          <div className={`order-catalog-col ${mobileTab === "catalog" ? "active-mobile" : ""}`} style={{
+            padding: "16px 20px",
             borderRight: "1px solid var(--border-color)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "14px",
-            overflowY: "auto"
+            gap: "14px"
           }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h4 style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-main)", margin: 0 }}>
@@ -540,67 +533,6 @@ export default function CreateOrder({
                               {p.discount}% Disc
                             </span>
                           )}
-
-                          {/* Real-time Inventory Stock Badge */}
-                          {(() => {
-                            const inv = inventoryMap[p.id] || inventoryMap[p.productCode];
-                            if (!inv) return null;
-                            if (inv.status === "OUT_OF_STOCK" || inv.availableStock <= 0) {
-                              return (
-                                <span style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  fontSize: "0.68rem",
-                                  color: "#f87171",
-                                  background: "rgba(239, 68, 68, 0.12)",
-                                  border: "1px solid rgba(239, 68, 68, 0.3)",
-                                  padding: "1px 6px",
-                                  borderRadius: "4px",
-                                  fontWeight: "700"
-                                }}>
-                                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ef4444" }}></span>
-                                  Out of Stock (0)
-                                </span>
-                              );
-                            }
-                            if (inv.status === "LOW_STOCK") {
-                              return (
-                                <span style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  fontSize: "0.68rem",
-                                  color: "#fbbf24",
-                                  background: "rgba(245, 158, 11, 0.12)",
-                                  border: "1px solid rgba(245, 158, 11, 0.3)",
-                                  padding: "1px 6px",
-                                  borderRadius: "4px",
-                                  fontWeight: "700"
-                                }}>
-                                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#f59e0b" }}></span>
-                                  Low Stock ({inv.availableStock} {p.unit || 'pcs'} left)
-                                </span>
-                              );
-                            }
-                            return (
-                              <span style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                fontSize: "0.68rem",
-                                color: "#34d399",
-                                background: "rgba(16, 185, 129, 0.12)",
-                                border: "1px solid rgba(16, 185, 129, 0.3)",
-                                padding: "1px 6px",
-                                borderRadius: "4px",
-                                fontWeight: "700"
-                              }}>
-                                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#10b981" }}></span>
-                                Stock: {inv.availableStock} {p.unit || 'pcs'}
-                              </span>
-                            );
-                          })()}
                         </div>
                       </div>
 
@@ -655,12 +587,10 @@ export default function CreateOrder({
           </div>
 
           {/* Right Column: Order Basket & Live Summary */}
-          <div style={{
-            padding: "20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "14px",
-            overflowY: "auto"
+          <div className={`order-cart-col ${mobileTab === "cart" ? "active-mobile" : ""}`} style={{
+            padding: "16px 20px",
+            background: "var(--bg-surface)",
+            gap: "14px"
           }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h4 style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-main)", margin: 0 }}>

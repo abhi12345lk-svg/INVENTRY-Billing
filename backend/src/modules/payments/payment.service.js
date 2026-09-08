@@ -73,12 +73,14 @@ export const getUnmatchedPaymentsService = async (user) => {
 };
 
 export const recordPaymentService = async (payload, user) => {
-  const validation = validatePaymentEntry(payload, user);
+  const paymentMode = (payload.paymentMode || payload.mode || "").toUpperCase();
+  const normalizedPayload = { ...payload, paymentMode };
+  const validation = validatePaymentEntry(normalizedPayload, user);
   if (!validation.isValid) {
     return { success: false, statusCode: 400, message: validation.message };
   }
 
-  const numAmount = round2(payload.amount);
+  const numAmount = round2(normalizedPayload.amount);
   const paymentNumber = await generatePaymentNumber();
 
   let customerSnapshot = {
@@ -124,7 +126,7 @@ export const recordPaymentService = async (payload, user) => {
     };
   }
 
-  const isUnmatchedUpi = payload.paymentMode === "UPI" && !customerSnapshot.customerId;
+  const isUnmatchedUpi = paymentMode === "UPI" && !customerSnapshot.customerId;
   const initialStatus = isUnmatchedUpi ? "UNMATCHED" : "RECORDED";
 
   const paymentRecordData = {
@@ -132,7 +134,7 @@ export const recordPaymentService = async (payload, user) => {
     paymentDate: payload.paymentDate || new Date().toISOString(),
     ...customerSnapshot,
     ...salesmanSnapshot,
-    paymentMode: payload.paymentMode,
+    paymentMode,
     amount: numAmount,
     referenceNumber: payload.referenceNumber || payload.upiReference || payload.chequeNumber || `REF-${Date.now()}`,
     payerName: payload.payerName || customerSnapshot.customerName || "Counter Payer",

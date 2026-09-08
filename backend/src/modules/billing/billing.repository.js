@@ -156,7 +156,7 @@ export const createBillRecord = async (billData) => {
   }
 
   const newBill = {
-    id: `bill-${Date.now()}`,
+    id: `bill-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     ...billData,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

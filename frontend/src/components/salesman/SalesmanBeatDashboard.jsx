@@ -156,14 +156,18 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%", maxWidth: "100%" }}>
           <div style={{
             display: "flex",
             background: "var(--bg-secondary)",
             padding: "4px",
             borderRadius: "10px",
             border: "1px solid var(--border-color)",
-            gap: "4px"
+            gap: "4px",
+            overflowX: "auto",
+            maxWidth: "100%",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none"
           }}>
             <button
               onClick={() => {
@@ -306,15 +310,15 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
       )}
 
       {/* KPI Stats Strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-        <div className="glass-card" style={{
-          padding: "18px 20px",
+      <div className="responsive-kpi-grid">
+        <div className="glass-card responsive-kpi-card" style={{
+          padding: "16px 18px",
           borderRadius: "14px",
           background: "var(--bg-surface)",
           border: "1px solid var(--border-color)",
           display: "flex",
           alignItems: "center",
-          gap: "14px"
+          gap: "12px"
         }}>
           <div style={{
             width: "44px",
@@ -501,7 +505,7 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
               No outlets found in your assigned beat.
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
               {filteredCustomers.map((cus) => (
                 <div 
                   key={cus.id}

@@ -95,7 +95,7 @@ export const createVehicleRecord = async (data, user) => {
     return { ...saved.toObject(), id: saved._id.toString() };
   }
 
-  const newVehicle = { id: `veh-${Date.now()}`, ...record };
+  const newVehicle = { id: `veh-${Date.now()}-${Math.floor(Math.random() * 10000)}`, ...record };
   inMemoryVehicles.unshift(newVehicle);
   return newVehicle;
 };
@@ -248,7 +248,7 @@ export const createTripRecord = async (tripData, user) => {
     return { ...saved.toObject(), id: saved._id.toString() };
   }
 
-  const newTrip = { id: `trip-${Date.now()}`, ...record };
+  const newTrip = { id: `trip-${Date.now()}-${Math.floor(Math.random() * 10000)}`, ...record };
   inMemoryTrips.unshift(newTrip);
   return newTrip;
 };

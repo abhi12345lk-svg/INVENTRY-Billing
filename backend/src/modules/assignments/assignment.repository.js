@@ -51,7 +51,7 @@ export const reassignCustomerRecord = async ({
   const areaName = area ? area.areaName : (areaId || "Unassigned");
 
   // 3. Create New Authoritative Assignment Record
-  const newAssignmentId = `ca-${Date.now()}`;
+  const newAssignmentId = `ca-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const newAssignment = {
     id: newAssignmentId,
     customerId,

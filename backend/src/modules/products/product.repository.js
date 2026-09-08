@@ -112,7 +112,7 @@ export const findProductByCode = async (productCode) => {
 };
 
 export const createProductRecord = async (productData) => {
-  const newId = `prd-${Date.now()}`;
+  const newId = productData.id || `prd-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   const code = generateProductCode();
   const now = new Date().toISOString();
 

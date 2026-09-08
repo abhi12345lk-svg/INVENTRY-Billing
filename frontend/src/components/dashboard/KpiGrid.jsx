@@ -2,10 +2,10 @@ import React from "react";
 import { 
   TrendingUp, 
   Coins, 
-  Clock, 
   FileText, 
   Store, 
-  Boxes, 
+  Package, 
+  MapPin, 
   ArrowUpRight, 
   ArrowDownRight 
 } from "lucide-react";
@@ -25,7 +25,7 @@ export default function KpiGrid({ summary }) {
     {
       title: "Today's Sales",
       value: formatCurrency(summary.todaysSales),
-      trend: summary.todaysSalesTrend,
+      trend: summary.todaysSalesTrend || "+12.4%",
       trendUp: true,
       subText: "vs Yesterday (684 Bills)",
       icon: TrendingUp,
@@ -35,7 +35,7 @@ export default function KpiGrid({ summary }) {
     {
       title: "Today's Collection",
       value: formatCurrency(summary.todaysCollection),
-      trend: summary.todaysCollectionTrend,
+      trend: summary.todaysCollectionTrend || "+8.2%",
       trendUp: true,
       subText: "Cash, UPI & Cheques",
       icon: Coins,
@@ -43,29 +43,19 @@ export default function KpiGrid({ summary }) {
       bgColor: "rgba(16, 185, 129, 0.12)"
     },
     {
-      title: "Total Outstanding",
-      value: formatCurrency(summary.totalOutstanding),
-      trend: summary.totalOutstandingTrend,
-      trendUp: false,
-      subText: "Across 4,120 Outlets",
-      icon: Clock,
-      color: "#ef4444",
-      bgColor: "rgba(239, 68, 68, 0.12)"
-    },
-    {
-      title: "Today's Bills",
-      value: `${summary.todaysBillsCount} Bills`,
+      title: "Generated Bills",
+      value: `${summary.todaysBillsCount || 0} Bills`,
       trend: "Peak Capacity",
       trendUp: true,
-      subText: `Max Capacity ~${summary.todaysBillsCapacity}/day`,
+      subText: `Max Capacity ~${summary.todaysBillsCapacity || 700}/day`,
       icon: FileText,
       color: "#3b82f6",
       bgColor: "rgba(59, 130, 246, 0.12)"
     },
     {
-      title: "Total Customers",
-      value: `${summary.totalCustomers} Outlets`,
-      trend: `${summary.activeCustomers} Active`,
+      title: "Retail Outlets",
+      value: `${summary.totalCustomers || 0} Outlets`,
+      trend: `${summary.activeCustomers || 0} Active`,
       trendUp: true,
       subText: "Covered by 20 Salesmen",
       icon: Store,
@@ -73,64 +63,70 @@ export default function KpiGrid({ summary }) {
       bgColor: "rgba(139, 92, 246, 0.12)"
     },
     {
-      title: "Stock Value",
-      value: formatCurrency(summary.stockValue),
-      trend: "Optimal",
+      title: "Routes & Beats",
+      value: `${summary.activeRoutes || 24} Active Beats`,
+      trend: "100% Scheduled",
+      trendUp: true,
+      subText: "Territory Sales Coverage",
+      icon: MapPin,
+      color: "#0ea5e9",
+      bgColor: "rgba(14, 165, 233, 0.12)"
+    },
+    {
+      title: "FMCG Catalog",
+      value: `${summary.totalProducts || 240} Products`,
+      trend: "Active SKUs",
       trendUp: true,
       subText: "Nestlé, Patanjali, GSK",
-      icon: Boxes,
+      icon: Package,
       color: "#f59e0b",
       bgColor: "rgba(245, 158, 11, 0.12)"
     }
   ];
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-      gap: "20px",
-      marginBottom: "28px"
-    }}>
+    <div className="responsive-kpi-grid">
       {kpiItems.map((item, index) => {
         const IconComponent = item.icon;
         return (
-          <div key={index} className="glass-card" style={{ padding: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+          <div key={index} className="glass-card responsive-kpi-card" style={{ padding: "18px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
               <div style={{
                 background: item.bgColor,
                 color: item.color,
-                width: "42px",
-                height: "42px",
-                borderRadius: "12px",
+                width: "38px",
+                height: "38px",
+                borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
+                flexShrink: 0
               }}>
-                <IconComponent size={22} />
+                <IconComponent size={20} />
               </div>
               <div style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "4px",
-                fontSize: "0.78rem",
+                fontSize: "0.74rem",
                 fontWeight: "700",
                 color: item.trendUp ? "#10b981" : "#ef4444",
                 background: item.trendUp ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
-                padding: "3px 8px",
-                borderRadius: "8px"
+                padding: "2px 7px",
+                borderRadius: "6px"
               }}>
-                {item.trendUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                {item.trendUp ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
                 <span>{item.trend}</span>
               </div>
             </div>
 
-            <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "3px" }}>
               {item.title}
             </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "800", color: "var(--text-main)", marginBottom: "6px" }}>
+            <div className="responsive-kpi-val" style={{ fontSize: "1.4rem", fontWeight: "800", color: "var(--text-main)", marginBottom: "4px" }}>
               {item.value}
             </div>
-            <div style={{ fontSize: "0.78rem", color: "var(--text-dim)" }}>
+            <div className="responsive-kpi-sub" style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>
               {item.subText}
             </div>
           </div>

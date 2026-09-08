@@ -346,7 +346,7 @@ export default function ExceptionDashboard({ token, user, onSelectException, onN
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <span style={{ background: "rgba(239, 68, 68, 0.15)", color: "#ef4444", padding: "2px 8px", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "800" }}>
-                  RECEIVABLES
+                  CREDIT_LIMIT
                 </span>
                 <span style={{ fontSize: "0.75rem", color: "#ef4444", fontWeight: "700" }}>Overdue: 62 Days</span>
               </div>
