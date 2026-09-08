@@ -146,7 +146,7 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       
       {/* Top Banner */}
-      <div className="glass-card" style={{
+      <div className="glass-card sm-control-header" style={{
         padding: "24px",
         borderRadius: "16px",
         background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%)",
@@ -157,8 +157,8 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
         flexWrap: "wrap",
         gap: "20px"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <div style={{
+        <div className="sm-header-user-info" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <div className="sm-header-icon-box" style={{
             width: "56px",
             height: "56px",
             borderRadius: "16px",
@@ -167,12 +167,13 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 8px 20px rgba(99, 102, 241, 0.4)"
+            boxShadow: "0 8px 20px rgba(99, 102, 241, 0.4)",
+            flexShrink: 0
           }}>
             <RouteIcon size={30} />
           </div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
               <h2 style={{ fontSize: "1.4rem", fontWeight: "800", color: "var(--text-main)", margin: 0 }}>
                 {user.name} — Field Beat Dashboard
               </h2>
@@ -195,7 +196,7 @@ export default function SalesmanBeatDashboard({ user, token, onNavigate, onLogou
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%", maxWidth: "100%" }}>
-          <div style={{
+          <div className="sm-nav-pills" style={{
             display: "flex",
             background: "var(--bg-secondary)",
             padding: "4px",

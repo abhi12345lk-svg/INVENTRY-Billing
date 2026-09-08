@@ -81,7 +81,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-dark)" }}>
       {/* Top Navbar */}
-      <header style={{
+      <header className="roleshell-header" style={{
         background: "var(--header-bg)",
         backdropFilter: "blur(20px)",
         borderBottom: "1px solid var(--border-card)",
@@ -95,7 +95,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
         top: 0,
         zIndex: 100
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+        <div className="roleshell-brand" style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <div style={{
             background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
             width: "36px",
@@ -136,7 +136,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
         </div>
 
         {/* User Info & High-Visibility Red Logout Button */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div className="roleshell-user-section" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <img
               src={user.avatar}
@@ -153,7 +153,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
               <div style={{ fontSize: "0.88rem", fontWeight: "700", color: "var(--text-main)" }}>
                 {user.name}
               </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+              <div className="roleshell-user-email" style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                 {user.email}
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function RoleShellPreview({ user, onLogout, token }) {
       </header>
 
       {/* Module Navigation Sub-Bar */}
-      <nav style={{
+      <nav className="roleshell-subnav" style={{
         background: "var(--bg-card)",
         borderBottom: "1px solid var(--border-card)",
         padding: "8px 16px",
