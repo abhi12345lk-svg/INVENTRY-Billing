@@ -79,12 +79,12 @@ export default function LoginScreen({ onLogin, isLoading, errorMessage }) {
   const handleInstantLogin = (roleItem, e) => {
     if (e) e.stopPropagation();
     handleSelectRole(roleItem);
-    onLogin({ emailOrMobile: roleItem.email, password: roleItem.password });
+    onLogin({ emailOrMobile: roleItem.email, password: roleItem.password, role: roleItem.role });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin({ emailOrMobile, password });
+    onLogin({ emailOrMobile, password, role: selectedRole });
   };
 
   return (
