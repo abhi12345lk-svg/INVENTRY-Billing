@@ -61,12 +61,18 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`=================================================`);
-  console.log(`🚀 Distributor ERP Backend running on port ${PORT}`);
-  console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`🔗 Customers API: http://localhost:${PORT}/api/customers`);
-  console.log(`=================================================`);
-  // Auto-seed demo data (skips if data already exists)
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`=================================================`);
+    console.log(`🚀 Distributor ERP Backend running on port ${PORT}`);
+    console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🔗 Customers API: http://localhost:${PORT}/api/customers`);
+    console.log(`=================================================`);
+    // Auto-seed demo data (skips if data already exists)
+    seedDemoData();
+  });
+} else {
   seedDemoData();
-});
+}
